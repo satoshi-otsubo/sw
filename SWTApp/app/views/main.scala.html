@@ -5,11 +5,19 @@
 <html>
     <head>
         <title>@title</title>
+        <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap.min.css"))'>
+        <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
     </head>
     <body>
-        @content
+        <div class="container">
+			@* エラーメッセージなど出力 *@
+            @tag.flashMessage()
+			<div class="content">
+				@* ページ内コンテンツ出力 *@
+				@content
+			</div>
+        </div>
     </body>
 </html>

@@ -1,0 +1,34 @@
+@(message: String, respose: models.response.TimeTableResponse)
+
+@main("Welcome to Play") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+    
+    <h2 class="copy-align">@message</h2>
+	<!-- マップ表示領域 -->
+	<div class="pagination-centered" id="mapCanvas">
+	</div>
+
+	
+	<table class="table table-striped">
+		<tr>
+		    <th class="table-column-first">@respose.station_name</th>
+		    <th class="table-column-second">@respose.line_name</th>
+		    <th class="table-column-third">@respose.direction</th>
+		    <th class="table-column-fourth">あああ</th>
+		    <th class="table-column-fourth">どこまで？</th>
+		</tr>
+ 		@for((entry,index) <- respose.timeTables.zipWithIndex) {
+            <tr>
+                <td>@entry.hour</td>
+                <td>@entry.minute</td>
+                <td>@entry.mark</td>
+                <td>@entry.trn</td>
+                <td>@entry.sta</td>
+            </tr>  
+	}
+	</table>
+	
+	<script type="text/javascript">
+
+	</script>
+}
