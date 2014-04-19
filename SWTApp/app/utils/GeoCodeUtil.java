@@ -47,6 +47,9 @@ public class GeoCodeUtil {
 	        
 	        geoCodeRange.setRangeFrom(fromCoordinates);
 	        geoCodeRange.setRangeTo(toCoordinates);
+	        
+	        //String aaa = null;
+	        //aaa.substring(2);
         }catch(Exception e){
         	String errorMessage = GeoCodeUtil.class.getName() + ":setRange";
         	throw new AppException(AppError.UTIL_GEOCODE_ERROR, e, errorMessage);

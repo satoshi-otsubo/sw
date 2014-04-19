@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import common.exception.AppException;
-
+import common.exception.AppErrorConstants.AppError;
 import play.data.Form;
 import play.libs.F.Option;
 import play.mvc.*;
@@ -20,9 +20,30 @@ import static play.data.Form.form;
 
 public class S_SearchController extends BaseController {
 	
-	public static Result search() {
-		return ok(s_search.render("search_index 条件指定画面."));
-	}
+    /**
+    *
+    * 検索ページ（開始画面）
+    * @param 
+    * @return
+    */
+    public static Result search(){
+    	try{
+	    	Option<List<R_Prefecture>> result = new S_SearchService().getPrefectureList();
+	    	if(result.isDefined()){
+	    		S_SearchConditionsResponse respose = new S_SearchConditionsResponse();
+	    		respose.prefectures = result.get();
+	    		
+	    		Form<S_SearchRequest> request = new Form<S_SearchRequest>(S_SearchRequest.class);
+	    		return ok(s_search.render("s_search_conditions.", respose, request));
+	    	}
+    	}catch(AppException e){
+	    	return appError(e);
+    	}catch(Exception e){
+    		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
+    	}
+    	// 初期ページへ
+    	return ok(index.render("index."));
+    }
     
     /**
     *
@@ -48,11 +69,11 @@ public class S_SearchController extends BaseController {
 	    		return ok(s_search_result.render("searchStationsByLine", respose));
 	    	}
 	    }catch(AppException e){
-	    	appError(e);
+	    	return appError(e);
     	}catch(Exception e){
-    		UnknownError( e);
+    		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
     	}
-    	return fail(routes.S_SearchController.searchConditions(), "error", "路線検索でエラーが発生しました。");
+    	return fail(routes.S_SearchController.search(), "error", "路線検索でエラーが発生しました。");
     }
     /**
     *
@@ -69,7 +90,7 @@ public class S_SearchController extends BaseController {
     	}
     	
     	if(data.area == null || data.lat == null || data.lon == null){
-    		return ok(s_search.render("search_index 条件指定画面 geoSearchから."));
+    		return fail(routes.S_SearchController.search(), "error", "検索条件がない。");
     	}
     	S_SearchService service = new S_SearchService();
     	
@@ -98,12 +119,12 @@ public class S_SearchController extends BaseController {
 	    		return ok(s_search_result.render("geo Search.", respose));
 	    	}
 	    }catch(AppException e){
-	    	appError(e);
+	    	return appError(e);
     	}catch(Exception e){
-    		UnknownError( e);
+    		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
     	}
     	
-    	return fail(routes.S_SearchController.searchConditions(), "error", "位置情報検索でエラーが発生しました。");
+    	return fail(routes.S_SearchController.search(), "error", "位置情報検索でエラーが発生しました。");
     }
     
     /**
@@ -115,7 +136,7 @@ public class S_SearchController extends BaseController {
     	Form<S_SearchRequest> form = form(S_SearchRequest.class).bindFromRequest();
     	S_SearchRequest data = form.get();
     	if(data.station_name == null){
-    		return ok(s_search.render("search_index 条件指定画面 searchStationsByNameから."));
+    		return fail(routes.S_SearchController.search(), "error", "駅名が入力されていない。");
     	}
     	S_SearchService service = new S_SearchService();
     	try{
@@ -135,32 +156,13 @@ public class S_SearchController extends BaseController {
 	    		return ok(s_search_result.render("searchStationsByName.", respose));
 	    	}
 	    }catch(AppException e){
-	    	appError(e);
+	    	return appError(e);
     	}catch(Exception e){
-    		UnknownError( e);
+    		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
     	}
-    	return fail(routes.S_SearchController.searchConditions(), "error", "駅名検索でエラーが発生しました。");
+    	return fail(routes.S_SearchController.search(), "error", "駅名検索でエラーが発生しました。");
     }
-    
-    /**
-    *
-    * 検索ページ（開始画面）
-    * @param 
-    * @return
-    */
-    public static Result searchConditions(){
-    	Option<List<R_Prefecture>> result = new S_SearchService().getPrefectureList();
-    	if(result.isDefined()){
-    		S_SearchConditionsResponse respose = new S_SearchConditionsResponse();
-    		respose.prefectures = result.get();
-    		
-    		Form<S_SearchRequest> request = new Form<S_SearchRequest>(S_SearchRequest.class);
-    		return ok(s_search_conditions.render("s_search_conditions.", respose, request));
-    	}
-    	// 初期ページへ
-    	return ok(index.render("index."));
-    }
-    
+
     /**
     *
     * 都道府県から路線リストを取得する
@@ -168,23 +170,32 @@ public class S_SearchController extends BaseController {
     * @return
     */
     public static Result lineListSearchByPrefecture(Long prefectureId) {
-    	Option<R_Prefecture> prefecture = new S_SearchService().getPrefecture(prefectureId);
-    	if(prefecture.isDefined()){
-        	// 都道府県idから都道府県に属する路線リストを取得
-        	Option<List<R_Line>> lines = new S_SearchService().getLineListByPrefecture(prefecture.get().id);
-        	if(lines.isDefined()){
-        		S_SearchConditionsResponse respose = new S_SearchConditionsResponse();
-        		List<R_Prefecture> prefectures = new ArrayList<R_Prefecture>();
-        		
-        		// 都道府県が持っている路線リストをセット
-        		prefecture.get().lines = lines.get();
-        		prefectures.add(prefecture.get());
-        		respose.prefectures = prefectures;
-        		
-        		return ok(s_search_lineListByPrefecture.render("s_search_lineListByPrefecture.", respose));
+    	// 返却
+    	S_SearchConditionsResponse respose = new S_SearchConditionsResponse();
+    	
+    	try{
+        	Option<R_Prefecture> prefecture = new S_SearchService().getPrefecture(prefectureId);
+        	if(prefecture.isDefined()){
+            	// 都道府県idから都道府県に属する路線リストを取得
+            	Option<List<R_Line>> lines = new S_SearchService().getLineListByPrefecture(prefecture.get().id);
+            	if(lines.isDefined()){
+            		List<R_Prefecture> prefectures = new ArrayList<R_Prefecture>();
+            		
+            		// 都道府県が持っている路線リストをセット
+            		prefecture.get().lines = lines.get();
+            		prefectures.add(prefecture.get());
+            		respose.prefectures = prefectures;
+            		
+            		return ok(s_search_lineListByPrefecture.render("s_search_lineListByPrefecture.", respose));
+            	}
         	}
+    	}catch(AppException e){
+	    	return appError(e);
+    	}catch(Exception e){
+    		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
     	}
-    	return fail(routes.S_SearchController.searchConditions(), "error", "都道府県検索でエラーが発生しました。");
+
+    	return fail(routes.S_SearchController.search(), "error", "都道府県検索でエラーが発生しました。");
     }
     
     public static Result index() {

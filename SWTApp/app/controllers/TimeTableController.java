@@ -5,6 +5,9 @@ import static play.data.Form.form;
 import java.util.Calendar;
 import java.util.List;
 
+import common.exception.AppException;
+import common.exception.AppErrorConstants.AppError;
+
 import play.*;
 import play.data.Form;
 import play.libs.F.Option;
@@ -14,8 +17,11 @@ import views.html.*;
 import models.entity.*;
 import models.request.S_SearchRequest;
 import models.request.TimeTableRequest;
+import models.response.R_Prefecture;
 import models.response.R_Station;
+import models.response.S_SearchConditionsResponse;
 import models.response.TimeTableResponse;
+import models.service.S_SearchService;
 import models.service.TimeTableService;
 public class TimeTableController extends BaseController {
 
@@ -23,7 +29,9 @@ public class TimeTableController extends BaseController {
 	
     	TimeTableService service = new TimeTableService();
     	service.setTimeTable();
-        return ok(s_search.render("Your new application is ready."));
+    	
+    	// 初期ページへ
+    	return ok(index.render("index."));
     	
     }
     
@@ -38,15 +46,25 @@ public class TimeTableController extends BaseController {
     	// バリデーションなどの処理は後で
     	
     	TimeTableService service = new TimeTableService();
-    	Option<TimeTableResponse> result =service.getStationTimeTable(
-    			Long.parseLong(data.station_id),
-    			kind,
-    			data.line_name,
-    			data.direction);
+    	Option<TimeTableResponse> result = null;
+    	try{
+    		
+        	result =service.getStationTimeTable(
+        			Long.parseLong(data.station_id),
+        			kind,
+        			data.line_name,
+        			data.direction);
+        	
+    	}catch(AppException e){
+    		return appError(e);
+    	}catch(Exception e){
+    		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
+    	}
+
     	if(result.isDefined()){
     		return ok(s_timetable.render("時刻表.", result.get()));
     	}else{
-    		return ok(s_search.render("Your new application is ready."));
+    		return fail(routes.S_SearchController.search(), "error", "時刻表が取得できませんでした。");
     	}
     	
     }

@@ -207,7 +207,7 @@ public class S_SearchService {
     * @param 
     * @return
     */
-	public Option<List<R_Prefecture>> getPrefectureList(){
+	public Option<List<R_Prefecture>> getPrefectureList() throws Exception{
 		Option<List<Prefecture>> prefecture = PrefectureDao.use().findAll();
 		if(prefecture.isDefined()){
 			List<R_Prefecture> rPrefectureList = new ArrayList<R_Prefecture>();
@@ -229,7 +229,7 @@ public class S_SearchService {
     * @param 
     * @return
     */
-	public Option<List<R_Line>> getLineListByPrefecture(Long prefectureId){
+	public Option<List<R_Line>> getLineListByPrefecture(Long prefectureId) throws Exception {
 		Option<List<Station>> prefStations = StationDao.use().findByPref(prefectureId);
 		if(prefStations.isDefined()){
 			List<Long> stationIds = new ArrayList<Long>();

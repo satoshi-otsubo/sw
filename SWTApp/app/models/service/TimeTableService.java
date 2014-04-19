@@ -772,7 +772,9 @@ public class TimeTableService {
 	}
 
 	// 駅検索結果画面より呼ばれる。時刻表情報を返す。
-	public Option<TimeTableResponse> getStationTimeTable(Long station_id, Integer kind, String line_name, String direction){
+	public Option<TimeTableResponse> getStationTimeTable(
+			Long station_id, Integer kind, String line_name, String direction) throws Exception {
+		
 		TimeTableResponse result  = new TimeTableResponse();
 		result.station_id = station_id.toString();
 		result.station_name = StationDao.use().findById(station_id).get().station_name;
@@ -780,17 +782,20 @@ public class TimeTableService {
 		result.line_name = line_name;
 		result.direction = direction; 
 		List<R_TimeTable> rTimeTables = new ArrayList<R_TimeTable>();
-		List<Timetable> timeTables = TimetableDao.use().findStationTimeTables(station_id, kind, line_name, direction).get();
-		for(Timetable t: timeTables){
-			R_TimeTable timeTable = new R_TimeTable();
-			timeTable.mark = t.mark;
-			timeTable.trn = t.trn;
-			timeTable.sta = t.sta;
-			timeTable.hour = t.hour;
-			timeTable.minute = t.minute;
-			rTimeTables.add(timeTable);
+		Option<List<Timetable>> timeTables = TimetableDao.use().findStationTimeTables(station_id, kind, line_name, direction);
+		//List<Timetable> timeTables = TimetableDao.use().findStationTimeTables(station_id, kind, line_name, direction).get();
+		if(timeTables.isDefined()){
+			for(Timetable t: timeTables.get()){
+				R_TimeTable timeTable = new R_TimeTable();
+				timeTable.mark = t.mark;
+				timeTable.trn = t.trn;
+				timeTable.sta = t.sta;
+				timeTable.hour = t.hour;
+				timeTable.minute = t.minute;
+				rTimeTables.add(timeTable);
+			}
+			result.timeTables = rTimeTables;
 		}
-		result.timeTables = rTimeTables;
 		return OptionUtil.apply(result); 
 	}
 

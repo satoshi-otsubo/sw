@@ -2,13 +2,12 @@ package controllers;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 
 import play.Logger;
 import play.mvc.Call;
 import play.mvc.Controller;
 import play.mvc.Result;
-import views.html.s_search;
+import views.html.app_error;
 import common.exception.*;
 
 /**
@@ -46,19 +45,6 @@ public class BaseController extends Controller {
     	pw.flush();	
     	Logger.error("エラー発生：" + e.getAppMessage() + " 理由：" + e.getAppError().getReason() + "\n内容：" + sw.toString());
         ctx().flash().put("error", "処理中にエラーが発生しました。");
-        return ok(s_search.render("システムエラー画面"));
-    }
-    
-    /**
-     * システムエラー発生時　処理 
-     *
-     * @param e
-     * @return
-     */
-    public static Result UnknownError(Exception e) {
-    	// ログにエラー内容を出力する
-    	Logger.error("予期していないエラー発生：", e);
-        ctx().flash().put("error", "処理中にエラーが発生しました。");
-        return ok(s_search.render("システムエラー画面"));
+        return ok(app_error.render("システムエラー画面"));
     }
 }

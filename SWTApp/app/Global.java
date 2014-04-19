@@ -1,4 +1,5 @@
 import org.apache.commons.lang3.ArrayUtils;
+
 import play.Application;
 import play.Configuration;
 import play.GlobalSettings;
@@ -9,6 +10,7 @@ import play.libs.F;
 import play.libs.Json;
 import play.mvc.*;
 import play.filters.csrf.CSRFFilter;
+
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -19,6 +21,7 @@ import java.util.Map;
  * @author 
  * @since 
  */
+@SuppressWarnings("unused")
 public class Global extends GlobalSettings {
 
     @Override
@@ -47,7 +50,8 @@ public class Global extends GlobalSettings {
      * @param method
      * @return
      */
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public Action onRequest(Http.Request request, Method method) {
         Logger.info(Json.toJson(request.headers()).toString());
         return super.onRequest(request, method);
@@ -103,7 +107,8 @@ public class Global extends GlobalSettings {
      * @param <T>
      * @return
      */
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public <T extends EssentialFilter> Class<T>[] filters() {
         return new Class[]{
                 CSRFFilter.class

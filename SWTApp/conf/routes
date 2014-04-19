@@ -4,15 +4,13 @@
 
 # Home page
 GET     /                                    controllers.S_SearchController.index()
-# 共通エラーページに変更する 消す？
+
 GET     /s_search                            controllers.S_SearchController.search()
+GET     /s_search_lineListByPrefecture/:id   controllers.S_SearchController.lineListSearchByPrefecture(id: Long)
 
 GET     /s_search_geo                        controllers.S_SearchController.searchStationsByGeoCode()
 GET     /s_search_stations_line              controllers.S_SearchController.searchStationsByLine()
 GET     /s_search_stations_name              controllers.S_SearchController.searchStationsByName()
-
-GET     /s_search_conditions                 controllers.S_SearchController.searchConditions()
-GET     /s_search_lineListByPrefecture/:id   controllers.S_SearchController.lineListSearchByPrefecture(id: Long)
 
 GET    /initTimeTable                        controllers.TimeTableController.start()
 GET    /station_timetable                    controllers.TimeTableController.stationTimeTable()
