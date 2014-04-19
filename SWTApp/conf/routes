@@ -8,7 +8,7 @@ GET     /                                    controllers.S_SearchController.inde
 GET     /s_search                            controllers.S_SearchController.search()
 GET     /s_search_lineListByPrefecture/:id   controllers.S_SearchController.lineListSearchByPrefecture(id: Long)
 
-GET     /s_search_geo                        controllers.S_SearchController.searchStationsByGeoCode()
+GET     /s_search_stations_geocode           controllers.S_SearchController.searchStationsByGeoCode()
 GET     /s_search_stations_line              controllers.S_SearchController.searchStationsByLine()
 GET     /s_search_stations_name              controllers.S_SearchController.searchStationsByName()
 

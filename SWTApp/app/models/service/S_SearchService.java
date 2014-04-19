@@ -314,19 +314,4 @@ public class S_SearchService {
 		respose.stations = stations;
 	}
 
-    /**
-     *
-     * @param name
-     * @param version
-     * @return
-     */
-    public Option<String> getResultText(String name, String version) {
-        StringBuilder result = new StringBuilder();
-        result.append(name);
-        result.append(ConfigUtil.get("checkyou.setting.message.result").getOrElse("-"));
-        result.append(version);
-        result.append(ConfigUtil.get("checkyou.setting.message.resultSuffix").getOrElse("."));
-        return OptionUtil.apply(result.toString());
-    }
-
 }

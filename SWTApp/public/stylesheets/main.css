@@ -3,3 +3,14 @@
   height: 200px;
   margin: 0 auto;
 }
+
+.logo, .footer-content, .description, .copy-align {
+    text-align: center;
+}
+
+/* extend twitter bootstrap */
+
+.navbar {
+    border-radius: 0;
+    border: none;
+}

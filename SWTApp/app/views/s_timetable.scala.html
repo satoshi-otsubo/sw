@@ -1,13 +1,12 @@
 @(message: String, respose: models.response.TimeTableResponse)
 
+@import layout._
+@import helper._
+
 @main("Welcome to Play") {
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
     
     <h2 class="copy-align">@message</h2>
-	<!-- マップ表示領域 -->
-	<div class="pagination-centered" id="mapCanvas">
-	</div>
-
 	
 	<table class="table table-striped">
 		<tr>

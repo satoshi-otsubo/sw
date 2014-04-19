@@ -1,5 +1,8 @@
 @(message: String, respose: models.response.S_SearchResponse)
 
+@import layout._
+@import helper._
+
 @main("Welcome to Play") {
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/ws-geomap.js")"></script>
@@ -32,7 +35,7 @@
             @if(entry.lineDirections != null) { 
             	<tr>
             		<td colspan="4">
-            			<table>
+            			<table class="table">
             				@for(lineDirections <- entry.lineDirections) {
             				<tr>
             					<td>@lineDirections.station_id</td>

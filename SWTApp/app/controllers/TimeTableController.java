@@ -2,9 +2,6 @@ package controllers;
 
 import static play.data.Form.form;
 
-import java.util.Calendar;
-import java.util.List;
-
 import common.exception.AppException;
 import common.exception.AppErrorConstants.AppError;
 
@@ -14,14 +11,8 @@ import play.libs.F.Option;
 import play.mvc.*;
 import utils.CalendarUtil;
 import views.html.*;
-import models.entity.*;
-import models.request.S_SearchRequest;
 import models.request.TimeTableRequest;
-import models.response.R_Prefecture;
-import models.response.R_Station;
-import models.response.S_SearchConditionsResponse;
 import models.response.TimeTableResponse;
-import models.service.S_SearchService;
 import models.service.TimeTableService;
 public class TimeTableController extends BaseController {
 
