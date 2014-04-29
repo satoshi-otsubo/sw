@@ -28,6 +28,8 @@ public class Timenotice extends Model {
 	@NotNull
 	public String line_name;
 	@NotNull
+	public String direction;
+	@NotNull
 	public Integer notice;
 	@Column(columnDefinition = "TEXT")
 	public String contents;

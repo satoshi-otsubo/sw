@@ -70,6 +70,7 @@ create table timenotice (
   station_id                bigint not null,
   kind                      integer not null,
   line_name                 varchar(255) not null,
+  direction                 varchar(255) not null,
   notice                    integer not null,
   contents                  TEXT,
   create_date               timestamp not null,

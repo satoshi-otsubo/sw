@@ -20,5 +20,9 @@ public class TimeTableResponse extends BaseResponse{
     public String kind;
     public String line_name;
     public String direction;
+    public Integer totalTimes;
+    public List<R_TimeNotice> noticeTrainKinds;
+    public List<R_TimeNotice> noticeDestinations;
+    public List<R_TimeNotice> noticeMarks;
     public List<R_TimeTable> timeTables;
 }

@@ -30,6 +30,7 @@ import models.entity.Company;
 import models.entity.Station;
 import models.entity.Timenotice;
 import models.entity.Timetable;
+import models.response.R_TimeNotice;
 import models.response.R_TimeTable;
 import models.response.TimeTableResponse;
 
@@ -614,7 +615,7 @@ public class TimeTableService {
                         			hourBk = hour;
                         		}
                         		// 注意書きをセット
-                        		noticeNo = setTimeNoticeList(line, tt.station_id, lineName, kindNo, noticeNo, timeNoticeMap);
+                        		noticeNo = setTimeNoticeList(line, tt.station_id, lineName, directionName, kindNo, noticeNo, timeNoticeMap);
                         	}
                         	
                         	if(line.matches(".*" + "</tfoot>" + ".*")){
@@ -727,7 +728,7 @@ public class TimeTableService {
 		}
 	}
 	
-	private Integer setTimeNoticeList(String lineStr, Long station_id, String lineName, String kindNo, Integer noticeNo, Map<Integer, Timenotice> timeNoticeMap){
+	private Integer setTimeNoticeList(String lineStr, Long station_id, String lineName, String direction, String kindNo, Integer noticeNo, Map<Integer, Timenotice> timeNoticeMap){
 		//System.out.println("noticeNo: " + noticeNo);
 		if(lineStr.matches(".*" + "timeNotice1" + ".*")){
 			noticeNo = 1;
@@ -747,6 +748,7 @@ public class TimeTableService {
 				Timenotice timeNotice = new Timenotice();
 				timeNotice.station_id = station_id;
 				timeNotice.line_name = lineName;
+				timeNotice.direction = direction;
 				timeNotice.kind = Integer.parseInt(kindNo);
 				timeNotice.notice = noticeNo;
 				timeNoticeMap.put(noticeNo, timeNotice);
@@ -781,10 +783,27 @@ public class TimeTableService {
 		result.kind = kind.toString();
 		result.line_name = line_name;
 		result.direction = direction; 
+		
+		//Map<String, String> goMap = new HashMap<String, String>();
+		// 駅の注意書きを取得
+		Option<List<Timenotice>> timenotices = TimenoticeDao.use().findByStationIdDirection(station_id, direction);
+		if(timenotices.isDefined()){
+			// 列車種別
+			result.noticeTrainKinds = getConvTimeNotice(1, kind, timenotices.get());
+			// 行き先
+			result.noticeDestinations = getConvTimeNotice(2, kind, timenotices.get());
+			// マーク
+			result.noticeMarks = getConvTimeNotice(3, kind, timenotices.get());
+		}
+		
+		// 駅に時刻リストを取得
 		List<R_TimeTable> rTimeTables = new ArrayList<R_TimeTable>();
 		Option<List<Timetable>> timeTables = TimetableDao.use().findStationTimeTables(station_id, kind, line_name, direction);
-		//List<Timetable> timeTables = TimetableDao.use().findStationTimeTables(station_id, kind, line_name, direction).get();
 		if(timeTables.isDefined()){
+			Integer timeIndex = 0;
+			Integer compHour = 0;
+			R_TimeTable perTimeTable = null;
+			
 			for(Timetable t: timeTables.get()){
 				R_TimeTable timeTable = new R_TimeTable();
 				timeTable.mark = t.mark;
@@ -792,11 +811,128 @@ public class TimeTableService {
 				timeTable.sta = t.sta;
 				timeTable.hour = t.hour;
 				timeTable.minute = t.minute;
-				rTimeTables.add(timeTable);
+				
+				if(t.mark != null && !t.mark.equals("")){
+					String mark = t.mark;
+					for(R_TimeNotice nMark: result.noticeMarks){
+						if(mark.equals(nMark.abbreviation)){
+							timeTable.dispMark = nMark.detail;
+							if(mark.equals("●")){
+								timeTable.dispMark = "[始]";
+							}
+						}
+					}
+				}
+				
+				if(t.trn != null && !t.trn.equals("")){
+					String trn = t.trn;
+					trn = trn.replaceAll(Pattern.quote("["), "");
+					trn = trn.replaceAll(Pattern.quote("]"), "");
+					for(R_TimeNotice trnKind: result.noticeTrainKinds){
+						if(trn.equals(trnKind.abbreviation)){
+							timeTable.dispTrainKind = trnKind.detail;
+						}
+					}
+				}else{
+					String trn = "無印";
+					for(R_TimeNotice trnKind: result.noticeTrainKinds){
+						if(trn.equals(trnKind.abbreviation)){
+							timeTable.dispTrainKind = trnKind.detail;
+						}
+					}
+				}
+				
+				if(t.sta != null && !t.sta.equals("")){
+					String sta = t.sta;
+					for(R_TimeNotice destination: result.noticeDestinations){
+						if(sta.equals(destination.abbreviation)){
+							timeTable.dispDestination = destination.detail;
+						}
+					}
+				}else{
+					String sta = "無印";
+					for(R_TimeNotice destination: result.noticeDestinations){
+						if(sta.equals(destination.abbreviation)){
+							timeTable.dispDestination = destination.detail;
+						}
+					}
+				}
+				
+				timeTable.timeIndex = timeIndex;
+				// 比較用時間
+				if(compHour == t.hour){
+					if(perTimeTable.detailTimeTables == null){
+						perTimeTable.detailTimeTables = new ArrayList<R_TimeTable>();
+					}
+					perTimeTable.detailTimeTables.add(timeTable);
+				}else{
+					rTimeTables.add(timeTable);
+					perTimeTable = timeTable;
+					
+					if(perTimeTable.detailTimeTables == null){
+						perTimeTable.detailTimeTables = new ArrayList<R_TimeTable>();
+					}
+					perTimeTable.detailTimeTables.add(timeTable);
+				}
+				compHour = t.hour;
+				timeIndex ++;
 			}
 			result.timeTables = rTimeTables;
+			result.totalTimes = timeTables.get().size();
 		}
 		return OptionUtil.apply(result); 
 	}
+	
+	// 注意書き部分を取得する(列車種別、行き先、始発など)
+	private List<R_TimeNotice> getConvTimeNotice(Integer noticeNo, Integer kind, List<Timenotice> timeNoticeList){
+		List<R_TimeNotice> retList = new ArrayList<R_TimeNotice>();
+		for(Timenotice timenotice: timeNoticeList){
+			if(timenotice.notice.equals(noticeNo)){
+				Integer kindCount = 0;
+				String[] contentsArray = timenotice.contents.split(",");
+				for(String content: contentsArray){
+					// 曜日種類で取得する部分を変更する
+					if(content.matches(".*" + "timeNotice" + ".*")){
+						kindCount ++;
+					}
+					if(kind == 1 && kindCount == 1){
+						setNotice(retList, content, noticeNo);
+					}else if(kind == 2 && kindCount == 2){
+						setNotice(retList, content, noticeNo);
+					}else if(kind == 4 && kindCount == 3){
+						setNotice(retList, content, noticeNo);
+					}
+				}
+			}
+
+		}
+		return retList;
+	}
+	
+	private void setNotice(List<R_TimeNotice> rTimeNotices, String content, Integer noticeNo){
+		if(content.matches(".*" + "dt" + ".*")){
+			if(content.matches(".*" + "dd" + ".*")){
+				R_TimeNotice rTimeNotice = new R_TimeNotice();
+				int sNo = content.indexOf("<dt>");
+				int eNo = content.indexOf("</dt>");
+				
+				if(noticeNo == 1){
+					if(sNo < 0){
+						sNo = content.indexOf("：") - 1;
+						rTimeNotice.abbreviation = content.substring(sNo, eNo - 1);
+					}else{
+						rTimeNotice.abbreviation = content.substring(sNo + 4, eNo - 1);
+					}
+				}else{
+					rTimeNotice.abbreviation = content.substring(sNo + 4, eNo - 1);
+				}
+				sNo = content.indexOf("<dd>");
+				eNo = content.indexOf("</dd>");
+				rTimeNotice.detail = content.substring(sNo + 4, eNo);
+				rTimeNotices.add(rTimeNotice);
+			}
+		}
+	}
+	
 
 }

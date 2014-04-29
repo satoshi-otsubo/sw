@@ -6,6 +6,8 @@
 
 .logo, .footer-content, .description, .copy-align {
     text-align: center;
+    vertical-align: top;
+    
 }
 
 /* extend twitter bootstrap */

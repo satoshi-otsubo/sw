@@ -3,31 +3,298 @@
 @import layout._
 @import helper._
 
-@main("Welcome to Play") {
+@main("時刻表") {
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
     
     <h2 class="copy-align">@message</h2>
+	<input type="hidden" id="timeSize" value="@respose.totalTimes">
+	<input type="hidden" id="selectCount" value="">
 	
+
+		<div class="container">
+			<div class="row">
+		  		<div class="col-xs-12"><h4 class="text-center">@respose.line_name</h4></div>
+		  		<div class="col-xs-12"><h4 class="text-center">@respose.direction</h4></div>	
+				<div class="col-xs-12"><h2 class="text-center">@respose.station_name</h2></div>
+				
+		  		<div class="col-xs-12">
+		  			<p class="text-center"><label id="dispTime"></label>発<span id="deyKind" class="label label-default">@respose.kind</span></p>
+		  		</div>
+		  		
+		  		<div class="col-xs-12">
+		  			<p class="text-center">
+		  			<span id="dispTrn" class="label label-primary"></span>
+		  			<span id="dispMark"></span>
+		  			<label id="dispSta"></label>行き
+		  			</p>
+		  		</div>
+		  		
+		  		<div class="col-xs-2" id="previousTime">
+		  			<br>
+		  			<button type="button" class="btn btn-default btn-sm">
+		  				<span class="glyphicon glyphicon-chevron-left"></span>
+		  			</button>
+		  		</div>
+		  		
+		  		<div class="col-xs-8"><h3 id="countTime" class="copy-align"></h3></div>
+		  		
+		  		<div class="col-xs-2" id="nextTime">
+		  			<br>
+		  			<button type="button" class="btn btn-default btn-sm">
+		  				<span class="glyphicon glyphicon-chevron-right"></span>
+		  			</button>
+		  		</div>
+		
+		  		@*
+				<div class="col-xs-2"><h3 class="text-center"></h3></div>
+				<div class="col-xs-2"><p class="text-center">時間</p></div>
+				<div class="col-xs-2"><h3 class="text-center"></p></div>
+				<div class="col-xs-2"><p class="text-center">分</p></div>
+				<div class="col-xs-2"><h3 class="text-center"></p></div>
+				<div class="col-xs-2"><p class="text-center">秒</p></div>
+				*@
+	  		</div>
+  		</div>
+
 	<table class="table table-striped">
 		<tr>
-		    <th class="table-column-first">@respose.station_name</th>
-		    <th class="table-column-second">@respose.line_name</th>
-		    <th class="table-column-third">@respose.direction</th>
-		    <th class="table-column-fourth">あああ</th>
-		    <th class="table-column-fourth">どこまで？</th>
+		    <th class="table-column-first">時</th>
+		    <th class="table-column-second">分</th>
 		</tr>
+		
  		@for((entry,index) <- respose.timeTables.zipWithIndex) {
             <tr>
                 <td>@entry.hour</td>
-                <td>@entry.minute</td>
-                <td>@entry.mark</td>
-                <td>@entry.trn</td>
-                <td>@entry.sta</td>
-            </tr>  
-	}
+                <td>
+            	@for((detailentry,index2) <- entry.detailTimeTables.zipWithIndex) {  
+                	@detailentry.minute 
+                	@if(detailentry.mark != null){
+                		<span class="label label-default">@detailentry.mark</span>
+                	}
+                	@if(detailentry.trn  != null){
+                		<span class="label label-default">@detailentry.trn</span>
+                	}
+                	@if(detailentry.sta   != null){
+                		<span class="label label-default">@detailentry.sta</span>
+                	}
+         
+                	<input type="hidden" id="time@detailentry.timeIndex" value="@detailentry.hour:@detailentry.minute">
+                	<input type="hidden" id="mark@detailentry.timeIndex" value="@detailentry.dispMark">
+                	<input type="hidden" id="trn@detailentry.timeIndex" value="@detailentry.dispTrainKind">
+                	<input type="hidden" id="sta@detailentry.timeIndex" value="@detailentry.dispDestination">
+            	}
+            	</td>
+            </tr>
+		}
 	</table>
+	<div>
+	列車種別　
+	@for(noticeTrainKind <- respose.noticeTrainKinds) {
+		@noticeTrainKind.abbreviation : @noticeTrainKind.detail 
+	}
+	</div>
+	<div>
+	注意書き　
+	@for(noticeDestination <- respose.noticeDestinations) {
+		@noticeDestination.abbreviation : @noticeDestination.detail 
+	}
+	</div>
+	<div>
+	マーク　
+	@for(noticeMark <- respose.noticeMarks) {
+		@noticeMark.abbreviation : @noticeMark.detail 
+	}
+	</div>
 	
-	<script type="text/javascript">
+<script type="text/javascript">
+	$(function() {
+		
+		// 前へがクリックされた時の処理
+		$("#previousTime").click(function(){
+			var select = parseInt($("#selectCount").val()) - 1;
+			setDispTime(select);
+		} );
+		// 次へがクリックされた時の処理
+		$("#nextTime").click(function(){
+			var select = parseInt($("#selectCount").val()) + 1;
+			setDispTime(select);
+		} );
+		
+		setNextTime(getNowTimeNum());
+		convDayKind();
+		//次の時間までのカウント開始
+		dispCountTime();
 
-	</script>
+	});
+	
+	function dispCountTime(){
+		var now  = new Date();
+		var yy = now.getFullYear();
+		var mm = now.getMonth() + 1;
+		var dd = now.getDate();
+		var hour = now.getHours(); // 時
+		var min  = now.getMinutes(); // 分
+		var sec  = now.getSeconds(); // 秒
+		
+		// 次の時間を取得（現在表示されてい時刻）
+		var nextArrayStr = $("#dispTime").text().split(":");
+		var nextTime = new Date(yy, mm, dd, nextArrayStr[0], nextArrayStr[1], 0);
+		
+		// 現在時刻を取得
+		var nowTime = new Date(yy, mm, dd, hour, min, sec);
+		
+		// 時間の差を求める
+		var outputTime = nextTime.getTime() - nowTime.getTime();
+		var countHour = parseInt(outputTime / (60*60*1000));
+		var countMin = parseInt((outputTime % (60*60*1000)) / (60*1000));
+		var countSec = parseInt((outputTime % (60*1000)) / 1000);
+		
+		if(countSec == 0 && countMin == 0 && countHour == 0){
+			$("#countTime").html("0秒");
+			setNextTime(getNowTimeNum());
+			//setTimeout("dispCountTime()",1000);
+			return;
+		}
+		
+		// 次の時間までのカウントを表示する
+		var outputTimeStr = "";
+		var pnStr = "";
+		//時間
+		if(countHour <= 0){
+			if(countHour < 0){
+				outputTimeStr += Math.abs(countHour) + "時間";
+				pnStr = "前";
+			}
+		}else{
+			outputTimeStr = countHour + "時間";
+			pnStr = "後";
+		}
+		//分
+		if(countMin <= 0){
+			if(countMin < 0){
+				outputTimeStr += Math.abs(countMin) + "分";
+				pnStr = "前";
+			}
+		}else{
+			outputTimeStr += countMin + "分";
+			pnStr = "後";
+		}
+		//秒
+		if(countSec <= 0){
+			if(countSec < 0){
+				outputTimeStr += Math.abs(countSec) + "秒";
+				pnStr = "前";
+			}
+		}else{
+			outputTimeStr += countSec + "秒";
+			pnStr = "後";
+		}
+		outputTimeStr += pnStr;
+
+		$("#countTime").html(outputTimeStr);
+		setTimeout("dispCountTime()",1000);
+	}
+
+	// 現在時刻の数字を取得
+	function getNowTimeNum(){
+		var now  = new Date();
+		var hour = now.getHours(); // 時
+		var min  = now.getMinutes(); // 分
+		var sec  = now.getSeconds(); // 秒
+		var retNowTimeNum = 0;
+		
+		retNowTimeNum = String(hour) + String(min);
+		if(min < 10){
+			retNowTimeNum = String(hour) + "0" + String(min);
+		}
+/*		
+		// 時間の再設定 日付が変わっても時刻表に２４時以降のデータがある場合２４をたす
+		if(retNowTimeNum < getConvTimeNum($("#time0").val())){
+			if($("#selectCount").val() < $("#timeSize").val()){
+				hour = hour + 24;
+				if(min < 10){
+					retNowTimeNum = String(hour) + "0" + String(min);
+				}
+			}
+		}
+*/		
+		return retNowTimeNum;
+	}
+	
+	// 現在時刻の次の時間を取得する
+	function setNextTime(nowTime){
+		var retNextTime = null;
+		var selectCount = 0;
+		var timeSize = $("#timeSize").val();
+		for(i = 0; i < timeSize; i++){
+			var convTime = getConvTimeNum($("#time" + i).val());
+			if(parseInt(nowTime) < parseInt(convTime)){
+				retNextTime = $("#time" + i).val();
+				selectCount = i;
+				break;
+			}
+		}
+		if(retNextTime == null){
+			// とりあえず始発の時間をセットする
+			retNextTime = $("#time0").val();
+		}
+		
+		// 画面の時間選択カウントに取得した時間の番号をセット
+		$("#selectCount").val(selectCount);
+		$("#dispTime").html(retNextTime);
+		
+		$("#dispSta").html($("#sta" + selectCount).val());
+		$("#dispTrn").html($("#trn" + selectCount).val());
+		$("#dispMark").html($("#mark" + selectCount).val());
+		
+		//alert(retNextTime);
+	}
+	
+	// 時刻表の時間を数字に変換する
+	function getConvTimeNum(time){
+		var retTimeNum = 0;
+		var splitTime = time.split(":");
+		var sh = "";
+		var st = "";
+		sh = splitTime[0];
+		if(splitTime[1].length == 1){
+			st = "0" + splitTime[1];
+		}else{
+			st = splitTime[1];
+		}
+		retTimeNum = sh + st;
+		return retTimeNum;
+	}
+	
+	function setDispTime(select){
+		var maxTime = parseInt($("#timeSize").val());
+		if(select < 0){
+			return;
+		}else if(select >= maxTime){
+			return;
+		}
+		$("#dispTime").html($("#time" + select).val());
+		
+		$("#dispSta").html($("#sta" + select).val());
+		$("#dispTrn").html($("#trn" + select).val());
+		$("#dispMark").html($("#mark" + select).val());
+		
+		$("#selectCount").val(select);
+	}
+	
+	function convDayKind(){
+		var kind = $("#deyKind").text();
+		if(kind == "1"){
+			$("#deyKind").html("平日");
+		}else if(kind == "2"){
+			$("#deyKind").html("土曜");
+		}else if(kind == "4"){
+			$("#deyKind").html("日曜・祝日");
+		}else{
+			$("#deyKind").html("謎の曜日");
+		}
+	}
+
+</script>
+
 }

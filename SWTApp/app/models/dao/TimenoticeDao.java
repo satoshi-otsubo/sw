@@ -1,5 +1,6 @@
 package models.dao;
 
+import models.entity.Station;
 import models.entity.Timenotice;
 import models.entity.Timetable;
 import play.db.ebean.Model;
@@ -23,7 +24,6 @@ public class TimenoticeDao implements ModelDao<Timenotice> {
         return new TimenoticeDao();
     }
 
-
     /**
      * IDで検索
      * @param id
@@ -39,6 +39,20 @@ public class TimenoticeDao implements ModelDao<Timenotice> {
         }
         return new None<Timenotice>();
     }
+    
+    /**
+     * 駅IDと方面で検索
+     * @param station_id,direction
+     * @return
+     */
+    public Option<List<Timenotice>> findByStationIdDirection(Long station_id, String direction) {
+    	Model.Finder<Long, Timenotice> find = ModelUtil.getFinder(Timenotice.class);
+        return OptionUtil.apply(
+        		find.where().eq("station_id", station_id).eq("direction", direction).findList());
+
+    }
+    
+    
     
     public Option<List<Timenotice>> findAll(){
     	Model.Finder<Long, Timenotice> find = ModelUtil.getFinder(Timenotice.class);

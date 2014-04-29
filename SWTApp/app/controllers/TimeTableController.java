@@ -1,15 +1,13 @@
 package controllers;
 
 import static play.data.Form.form;
-
 import common.exception.AppException;
 import common.exception.AppErrorConstants.AppError;
-
 import play.*;
 import play.data.Form;
 import play.libs.F.Option;
 import play.mvc.*;
-import utils.CalendarUtil;
+import utils.calendar.CalendarUtil;
 import views.html.*;
 import models.request.TimeTableRequest;
 import models.response.TimeTableResponse;
@@ -31,15 +29,15 @@ public class TimeTableController extends BaseController {
     	Form<TimeTableRequest> form = form(TimeTableRequest.class).bindFromRequest();
     	TimeTableRequest data = form.get();
     	
-    	// 表示する曜日を設定する
-    	Integer kind = CalendarUtil.getDayOfWeekKind();
-    	
     	// バリデーションなどの処理は後で
     	
     	TimeTableService service = new TimeTableService();
     	Option<TimeTableResponse> result = null;
+    	
     	try{
-    		
+	    	// 表示する曜日を設定する
+	    	Integer kind = CalendarUtil.getDayOfWeekKind();
+
         	result =service.getStationTimeTable(
         			Long.parseLong(data.station_id),
         			kind,
