@@ -819,6 +819,8 @@ public class TimeTableService {
 							timeTable.dispMark = nMark.detail;
 							if(mark.equals("●")){
 								timeTable.dispMark = "[始]";
+							}else{
+								timeTable.dispMark = "";
 							}
 						}
 					}

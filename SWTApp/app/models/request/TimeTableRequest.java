@@ -16,4 +16,5 @@ public class TimeTableRequest {
     public String kind;
     public String line_name;
     public String direction;
+    public String s_day;
 }

@@ -19,9 +19,23 @@ import net.arnx.jsonic.JSON;
  */
 public class CalendarUtil {
 
-    public static Integer getDayOfWeekKind() throws Exception{
+	// 1日前の種別を取得する
+	public static Integer getDayOfWeekKind(Integer s_day) throws Exception{
+		Calendar cal = Calendar.getInstance(); 
+		//cal.add(Calendar.DATE, -1);
+		cal.add(Calendar.DATE, s_day);
+		return getCommonDayOfWeekKind(cal);
+	}
+	
+	// 現在の種別を取得する
+	public static Integer getDayOfWeekKind() throws Exception{
+		Calendar cal = Calendar.getInstance();
+		return getCommonDayOfWeekKind(cal);
+	}
+	
+    public static Integer getCommonDayOfWeekKind(Calendar cal) throws Exception{
     	Integer result = 1;
-    	Calendar cal = Calendar.getInstance(); 
+    	//Calendar cal = Calendar.getInstance(); 
         switch (cal.get(Calendar.DAY_OF_WEEK)) {
 	        case Calendar.SUNDAY: 
 	        	result = 4;
@@ -49,7 +63,6 @@ public class CalendarUtil {
         }
         
         if(result == 1){
-        	//boolean aaa = isHday(2014, 5, 4);
         	if(isHday(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DATE))){
         		result = 4;
         	}

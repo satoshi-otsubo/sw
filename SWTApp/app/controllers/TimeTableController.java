@@ -51,6 +51,7 @@ public class TimeTableController extends BaseController {
     	}
 
     	if(result.isDefined()){
+    		Logger.info(routes.TimeTableController.stationTimeTable().url());
     		return ok(s_timetable.render("時刻表.", result.get()));
     	}else{
     		return fail(routes.S_SearchController.search(), "error", "時刻表が取得できませんでした。");

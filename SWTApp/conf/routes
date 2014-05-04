@@ -15,6 +15,9 @@ GET     /s_search_stations_name              controllers.S_SearchController.sear
 GET    /initTimeTable                        controllers.TimeTableController.start()
 GET    /station_timetable                    controllers.TimeTableController.stationTimeTable()
 
+# API URL
+GET    /s_app/api/v1/station_timetable       controllers.api.ApiTimeTableController.stationTimeTable()
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /webjars/*file              controllers.WebJarAssets.at(file)

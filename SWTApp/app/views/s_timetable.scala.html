@@ -5,12 +5,10 @@
 
 @main("時刻表") {
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
-    
-    <h2 class="copy-align">@message</h2>
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/ajax.js")"></script>
+	<input type="hidden" id="fTrnKbn" value="0">
 	<input type="hidden" id="timeSize" value="@respose.totalTimes">
 	<input type="hidden" id="selectCount" value="">
-	
-
 		<div class="container">
 			<div class="row">
 		  		<div class="col-xs-12"><h4 class="text-center">@respose.line_name</h4></div>
@@ -18,7 +16,10 @@
 				<div class="col-xs-12"><h2 class="text-center">@respose.station_name</h2></div>
 				
 		  		<div class="col-xs-12">
-		  			<p class="text-center"><label id="dispTime"></label>発<span id="deyKind" class="label label-default">@respose.kind</span></p>
+		  			<p class="text-center">
+		  				<label id="dispTime"></label>発
+		  				<span id="deyKind" class="label label-default">@respose.kind</span>
+		  			</p>
 		  		</div>
 		  		
 		  		<div class="col-xs-12">
@@ -55,38 +56,44 @@
 				*@
 	  		</div>
   		</div>
-
-	<table class="table table-striped">
-		<tr>
-		    <th class="table-column-first">時</th>
-		    <th class="table-column-second">分</th>
-		</tr>
-		
- 		@for((entry,index) <- respose.timeTables.zipWithIndex) {
-            <tr>
-                <td>@entry.hour</td>
-                <td>
-            	@for((detailentry,index2) <- entry.detailTimeTables.zipWithIndex) {  
-                	@detailentry.minute 
-                	@if(detailentry.mark != null){
-                		<span class="label label-default">@detailentry.mark</span>
-                	}
-                	@if(detailentry.trn  != null){
-                		<span class="label label-default">@detailentry.trn</span>
-                	}
-                	@if(detailentry.sta   != null){
-                		<span class="label label-default">@detailentry.sta</span>
-                	}
-         
-                	<input type="hidden" id="time@detailentry.timeIndex" value="@detailentry.hour:@detailentry.minute">
-                	<input type="hidden" id="mark@detailentry.timeIndex" value="@detailentry.dispMark">
-                	<input type="hidden" id="trn@detailentry.timeIndex" value="@detailentry.dispTrainKind">
-                	<input type="hidden" id="sta@detailentry.timeIndex" value="@detailentry.dispDestination">
-            	}
-            	</td>
-            </tr>
-		}
-	</table>
+	<div id="dispTimeTable">
+		<table class="table table-striped">
+			<tr>
+			    <th class="table-column-first">時</th>
+			    <th class="table-column-second"></th>
+			</tr>
+			
+	 		@for((entry,index) <- respose.timeTables.zipWithIndex) {
+	            <tr>
+	                <td><br>@entry.hour</td>
+	                <td>
+	                <div class="row">
+	            	@for((detailentry,index2) <- entry.detailTimeTables.zipWithIndex) {
+		            	<div class="col-xs-3 col-sm-2 col-md-1">
+		            		<span class="disp-notice">
+		            		@if(detailentry.trn != null){
+								@detailentry.trn
+		                	} 
+		            		@if(detailentry.sta != null){
+								@detailentry.sta
+		                	}
+		                	&nbsp;</span><br>
+		                	@detailentry.minute
+		                	@if(detailentry.mark != null){
+		                		@detailentry.mark
+		                	}
+		                	<input type="hidden" id="time@detailentry.timeIndex" value="@detailentry.hour:@detailentry.minute">
+		                	<input type="hidden" id="mark@detailentry.timeIndex" value="@detailentry.dispMark">
+		                	<input type="hidden" id="trn@detailentry.timeIndex" value="@detailentry.dispTrainKind">
+		                	<input type="hidden" id="sta@detailentry.timeIndex" value="@detailentry.dispDestination">
+		            	</div>
+	            	}
+	            	</div>
+	            	</td>
+	            </tr>
+			}
+		</table>
+	</div>	
 	<div>
 	列車種別　
 	@for(noticeTrainKind <- respose.noticeTrainKinds) {
@@ -106,6 +113,8 @@
 	}
 	</div>
 	
+	<div>条件を指定：<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()">ボタン予定</a></div>
+	
 <script type="text/javascript">
 	$(function() {
 		
@@ -120,11 +129,18 @@
 			setDispTime(select);
 		} );
 		
+		// テスト
+		setTimeTableOfDay();
+		
+		// 次の出発時刻をセットする
 		setNextTime(getNowTimeNum());
+		//曜日でラベルの色を変更する 
 		convDayKind();
+		//電車種別でラベルの色を変更する
+		convTrnKind();
 		//次の時間までのカウント開始
 		dispCountTime();
-
+		
 	});
 	
 	function dispCountTime(){
@@ -136,25 +152,51 @@
 		var min  = now.getMinutes(); // 分
 		var sec  = now.getSeconds(); // 秒
 		
+		if(getConvTimeNum(hour + ":" + min) < getConvTimeNum($("#time0").val())){
+			if($("#fTrnKbn").val() == 1){
+				hour = hour + 24;
+			}
+		}
+		
 		// 次の時間を取得（現在表示されてい時刻）
 		var nextArrayStr = $("#dispTime").text().split(":");
 		var nextTime = new Date(yy, mm, dd, nextArrayStr[0], nextArrayStr[1], 0);
 		
 		// 現在時刻を取得
 		var nowTime = new Date(yy, mm, dd, hour, min, sec);
-		
+
 		// 時間の差を求める
 		var outputTime = nextTime.getTime() - nowTime.getTime();
 		var countHour = parseInt(outputTime / (60*60*1000));
 		var countMin = parseInt((outputTime % (60*60*1000)) / (60*1000));
 		var countSec = parseInt((outputTime % (60*1000)) / 1000);
 		
-		if(countSec == 0 && countMin == 0 && countHour == 0){
-			$("#countTime").html("0秒");
-			setNextTime(getNowTimeNum());
-			//setTimeout("dispCountTime()",1000);
-			return;
+		// 終電時刻を過ぎた場合、ページを再読み込み
+		if($("#selectCount").val() == $("#timeSize").val() - 1){
+			if(countSec == 0 && countMin == 0 && countHour == 0){
+				location.href = location.href;
+
+			}
+		}else{
+			
+			// 0時の場合の処理
+			if(hour == 0 && min == 0 && sec == 0){
+				setTimeTableOfDay();
+				setNextTime(getNowTimeNum());
+				convDayKind();
+				setTimeout("dispCountTime()",1000);
+				return;
+			}
+			
+			if(countSec == 0 && countMin == 0 && countHour == 0){
+				$("#countTime").html("0秒");
+				setNextTime(getNowTimeNum());
+				setTimeout("dispCountTime()",1000);
+				return;
+			}
 		}
+		
+
 		
 		// 次の時間までのカウントを表示する
 		var outputTimeStr = "";
@@ -202,22 +244,25 @@
 		var min  = now.getMinutes(); // 分
 		var sec  = now.getSeconds(); // 秒
 		var retNowTimeNum = 0;
+
 		
 		retNowTimeNum = String(hour) + String(min);
 		if(min < 10){
 			retNowTimeNum = String(hour) + "0" + String(min);
 		}
-/*		
+		
+		
 		// 時間の再設定 日付が変わっても時刻表に２４時以降のデータがある場合２４をたす
-		if(retNowTimeNum < getConvTimeNum($("#time0").val())){
-			if($("#selectCount").val() < $("#timeSize").val()){
+		if(parseInt(retNowTimeNum) < getConvTimeNum($("#time0").val())){
+			if($("#fTrnKbn").val() == 1){
 				hour = hour + 24;
+				retNowTimeNum = String(hour) + String(min);
 				if(min < 10){
 					retNowTimeNum = String(hour) + "0" + String(min);
 				}
 			}
 		}
-*/		
+	
 		return retNowTimeNum;
 	}
 	
@@ -247,6 +292,7 @@
 		$("#dispTrn").html($("#trn" + selectCount).val());
 		$("#dispMark").html($("#mark" + selectCount).val());
 		
+		convTrnKind();
 		//alert(retNextTime);
 	}
 	
@@ -263,7 +309,7 @@
 			st = splitTime[1];
 		}
 		retTimeNum = sh + st;
-		return retTimeNum;
+		return parseInt(retTimeNum);
 	}
 	
 	function setDispTime(select){
@@ -279,21 +325,219 @@
 		$("#dispTrn").html($("#trn" + select).val());
 		$("#dispMark").html($("#mark" + select).val());
 		
+		convTrnKind();
+		
 		$("#selectCount").val(select);
 	}
 	
+	// 曜日変換
 	function convDayKind(){
 		var kind = $("#deyKind").text();
 		if(kind == "1"){
 			$("#deyKind").html("平日");
 		}else if(kind == "2"){
 			$("#deyKind").html("土曜");
+			$("#deyKind").removeClass("label-default");
+			$("#deyKind").addClass("label-success");
 		}else if(kind == "4"){
 			$("#deyKind").html("日曜・祝日");
+			$("#deyKind").removeClass("label-default");
+			$("#deyKind").addClass("label-danger");
 		}else{
 			$("#deyKind").html("謎の曜日");
 		}
 	}
+	// 電車種類変換（色）
+	function convTrnKind(){
+		var kind = $("#dispTrn").text();
+		$("#dispTrn").removeClass("label-default");
+		$("#dispTrn").removeClass("label-primary");
+		$("#dispTrn").removeClass("label-success");
+		$("#dispTrn").removeClass("label-info");
+		$("#dispTrn").removeClass("label-warning");
+		$("#dispTrn").removeClass("label-danger");
+		if(kind == "普通" || kind == "各駅停車"){
+			//デフォルト
+			$("#dispTrn").addClass("label-default");
+		}else if(kind == "快速"){
+			$("#dispTrn").addClass("label-primary");
+		}else if(kind == "寝台特急"){
+			$("#dispTrn").addClass("label-warning");
+		}else if(kind == "特急"){
+			$("#dispTrn").addClass("label-danger");
+		}else if(kind == "急行"){
+			$("#dispTrn").addClass("label-warning");
+		}else if(kind == "ＳＬ"){
+			$("#dispTrn").addClass("label-default");
+		}else if(kind == "区間快速"){
+			$("#dispTrn").addClass("label-primary");
+		}else if(kind == "通勤快速"){
+			$("#dispTrn").addClass("label-danger");
+		}else if(kind == "通勤急行"){
+			$("#dispTrn").addClass("label-danger");
+		}else if(kind == "準急"){
+			$("#dispTrn").addClass("label-success");
+		}else if(kind == "快速急行"){
+			$("#dispTrn").addClass("label-info");
+		}else if(kind == "区間準急"){
+			$("#dispTrn").addClass("label-info");
+		}else if(kind == "区間急行"){
+			$("#dispTrn").addClass("label-warning");
+		}else if(kind == "ライナー"){
+			$("#dispTrn").addClass("label-danger");
+		}else if(kind == "通勤急行"){
+			$("#dispTrn").addClass("label-warning");
+		}else{
+			$("#dispTrn").addClass("label-default");
+		}
+	}
+	
+	
+	function setTimeTableOfDay(){
+		// 始発より前出会った場合
+		if(isBeforeFirstTrain()){
+			// 一日前の時刻表を取得する
+			var previousDayTimetableData = getPreviousDayTimetable();
+			
+			//終電前であるか判定
+			if(isBeforeLastTrain(previousDayTimetableData)){
+				// 終電と始発の間の時刻であることを表すフラグ
+				$("#fTrnKbn").val(1);
+				// 終電前であった場合、１日前の時刻表をセットする
+				setDispTimeTable(previousDayTimetableData);
+			}
+		}
+	}
+	
+	// 現在時刻が始発時刻より前かの判定
+	function isBeforeFirstTrain(){
+		var now  = new Date();
+		var hour = now.getHours(); // 時
+		var min  = now.getMinutes(); // 分
+		
+		//今日の始発時間を取得
+		var firstTrainTime = getConvTimeNum($("#time0").val());
+		
+		// 現在時刻の比較用データを取得
+		var nowTimeNum = getConvTimeNum(hour + ":" + min);
+		
+		// 現在時刻と始発時刻を比較し、始発時間のほうが大きい場合trueを返す
+		if(nowTimeNum < firstTrainTime){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	// 終電前かの判定を行う
+	function isBeforeLastTrain(previousDayTimetableData){
+		// 現在の時刻を取得
+		var now  = new Date();
+		var hour = now.getHours(); // 時
+		var min  = now.getMinutes(); // 分
+		var sec  = now.getSeconds(); // 秒
+		var nowTimeNum = 0;
+
+		hour = hour + 24;
+		nowTimeNum = String(hour) + String(min);
+		if(min < 10){
+			nowTimeNum = String(hour) + "0" + String(min);
+		}
+		
+		var getName = previousDayTimetableData.totalTimes - 1;
+		var lastTimeInfo = previousDayTimetableData.timeInfos[getName];
+		var lastTimeNum = getConvTimeNum(lastTimeInfo.hour + ":" + lastTimeInfo.minute);
+		
+		if(parseInt(nowTimeNum) < parseInt(lastTimeNum)){
+			return true;
+		}else{
+			return false;
+		}		
+	}
+	
+	// 現在日の前日の時刻表を取得する
+	function getPreviousDayTimetable(){
+		var url = "@controllers.api.routes.ApiTimeTableController.stationTimeTable().absoluteURL()";
+		var vals = {};
+		vals['station_id'] = "@respose.station_id";
+		vals['line_name'] = "@respose.line_name";
+		vals['direction'] = "@respose.direction";
+		vals['s_day'] = "-1";
+		var retData = exeAjax(url, vals, "GET");
+		return retData;
+	}
+	
+	// 時刻表JSONデータから画面表示時刻表テーブルを作成する
+	function setDispTimeTable(data){
+		$("#dispTimeTable").empty();
+		var dispHtml = "";
+		
+		var dispHour = 999;
+		
+		// 曜日表示セット
+		$("#deyKind").html(data.kind);
+		$("#timeSize").html(data.totalTimes);
+
+		// 分を時間の中にまとめるための情報を作成
+		var timeArray = {};
+		for(var i = 0; i < data.totalTimes; i++){
+			var timeInfo = data.timeInfos[i];
+			if(dispHour != timeInfo.hour){
+				dispHour = timeInfo.hour;
+				timeArray[dispHour] = 0;
+			}else{
+				timeArray[dispHour] = timeArray[dispHour] + 1;
+			}
+		}
+		
+		// テーブル作成
+		dispHour = 999;
+		var minuteCount = 0;
+		dispHtml += '<table class="table table-striped">';
+		dispHtml += '<tr><th class="table-column-first">時</th>';
+		dispHtml += '<th class="table-column-second">TESTsitemasu </th></tr>';
+		for(var i = 0; i < data.totalTimes; i++){
+			var timeInfo = data.timeInfos[i];
+			if(dispHour != timeInfo.hour){
+				dispHtml += '<td><br>' + timeInfo.hour + '</td>';
+				dispHtml += '<td>';
+				dispHtml += '<div class="row">';
+				dispHour = timeInfo.hour;
+				minuteCount = 0;
+			}
+			dispHtml += '<div class="col-xs-3 col-sm-2 col-md-1">';
+			dispHtml += '<span class="disp-notice">';
+			if(timeInfo.trn != null){
+				dispHtml += timeInfo.trn;
+			}
+			if(timeInfo.sta != null){
+				dispHtml += timeInfo.sta;
+			}	
+			dispHtml += '&nbsp;</span><br>';
+
+			dispHtml += timeInfo.minute;
+			
+			if(timeInfo.mark != null){
+				dispHtml += timeInfo.mark;
+			}	
+			
+			dispHtml += '<input type="hidden" id="time' + timeInfo.timeIndex + '" value="' + timeInfo.hour + ':' + timeInfo.minute + '">';
+			dispHtml += '<input type="hidden" id="mark' + timeInfo.timeIndex + '" value="' + timeInfo.dispMark + '">';
+			dispHtml += '<input type="hidden" id="trn' + timeInfo.timeIndex + '" value="' + timeInfo.dispTrainKind + '">';
+			dispHtml += '<input type="hidden" id="sta' + timeInfo.timeIndex + '" value="' + timeInfo.dispDestination + '">';
+			dispHtml += '</div>';	
+			
+			if(timeArray[dispHour] <= minuteCount){
+				dispHtml += '</div></td></tr>';
+			}
+			minuteCount ++;
+		}
+		dispHtml += '</table>';
+
+		$("#dispTimeTable").html(dispHtml);
+	}
+	
+	
 
 </script>
 
