@@ -1,0 +1,33 @@
+@(message: String, respose: models.response.S_SearchConditionsResponse, request: Form[models.request.S_SearchRequest])
+
+@import layout._
+@import helper._
+
+@main("Welcome to Play") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+    
+    <h2 class="copy-align">@message</h2>
+    @helper.form(action = routes.S_SearchController.searchStationsByName){
+    	@(helper.inputText(
+    		field = request("station_name")
+    	))
+    	<input type="submit">
+    }
+	<div>駅名検索設置予定</div>
+	<table class="table table-striped">
+		<tr>
+		    <th class="table-column-first">id</th>
+		    <th class="table-column-second">都道府県名</th>
+		</tr>
+ 		@for((entry,index) <- respose.prefectures.zipWithIndex) {
+            <tr>
+                <td>@entry.id</td>
+                <td><a href="@routes.S_SearchController.lineListSearchByPrefecture(entry.id).absoluteURL()">@entry.pref_name</a></td>
+            </tr>  
+	}
+	</table>
+	
+	<script type="text/javascript">
+
+	</script>
+}

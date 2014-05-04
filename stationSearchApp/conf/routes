@@ -1,0 +1,23 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                                    controllers.S_SearchController.index()
+
+GET     /s_search                            controllers.S_SearchController.search()
+GET     /s_search_lineListByPrefecture/:id   controllers.S_SearchController.lineListSearchByPrefecture(id: Long)
+
+GET     /s_search_stations_geocode           controllers.S_SearchController.searchStationsByGeoCode()
+GET     /s_search_stations_line              controllers.S_SearchController.searchStationsByLine()
+GET     /s_search_stations_name              controllers.S_SearchController.searchStationsByName()
+
+GET    /initTimeTable                        controllers.TimeTableController.start()
+GET    /station_timetable                    controllers.TimeTableController.stationTimeTable()
+
+# API URL
+GET    /s_app/api/v1/station_timetable       controllers.api.ApiTimeTableController.stationTimeTable()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /webjars/*file              controllers.WebJarAssets.at(file)

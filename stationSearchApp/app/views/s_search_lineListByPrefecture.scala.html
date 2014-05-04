@@ -1,0 +1,29 @@
+@(message: String, respose: models.response.S_SearchConditionsResponse)
+
+@import layout._
+@import helper._
+
+@main("Welcome to Play") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+    
+    <h2 class="copy-align">@message</h2>
+    @for(prefecture <- respose.prefectures) {
+	<table class="table table-striped">
+		<tr>
+		    <th class="table-column-first">id</th>
+		    <th class="table-column-second">路線名</th>
+		</tr>
+		
+ 		@for((entry,index) <- prefecture.lines.zipWithIndex) {
+            <tr>
+                <td>@entry.line_id</td>
+                <td><a href="@routes.S_SearchController.searchStationsByLine().absoluteURL()?line_id=@entry.line_id&page=1">@entry.line_name</a></td>
+            </tr>  
+		}
+	</table>
+	}
+	
+	<script type="text/javascript">
+
+	</script>
+}

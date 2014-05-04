@@ -1,0 +1,154 @@
+@(message: String, respose: models.response.S_SearchResponse)
+
+@import layout._
+@import helper._
+
+@main("Welcome to Play") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/ws-geomap.js")"></script>
+	<script src="https://maps-api-ssl.google.com/maps/api/js?v=3&sensor=true" type="text/javascript"></script>
+    
+    <h2 class="copy-align">@message</h2>
+	<!-- マップ表示領域 -->
+	<div class="pagination-centered" id="mapCanvas">
+	</div>
+	@if(respose != null) { 
+	<input type="hidden" id="results_count" value="@respose.stations.size">
+	
+	<table class="table table-striped">
+		<tr>
+		    <th class="table-column-first">aaa</th>
+		    <th class="table-column-second">bbb</th>
+		    <th class="table-column-third">cccc</th>
+		    <th class="table-column-fourth">dddd</th>
+		</tr>
+            
+		@for((entry,index) <- respose.stations.zipWithIndex) {
+            <tr>
+                <td>@entry.station_name</td>
+                <td>ああああああ</td>
+                <td>@entry.distance</td>
+                <td>dumy1</td>
+                <input type="hidden" id="lat@{index}" value="@entry.lat">
+                <input type="hidden" id="lon@{index}" value="@entry.lon">
+            </tr>
+            @if(entry.lineDirections != null) { 
+            	<tr>
+            		<td colspan="4">
+            			<table class="table">
+            				@for(lineDirections <- entry.lineDirections) {
+            				<tr>
+            					<td>@lineDirections.station_id</td>
+            					<td>@lineDirections.line_name</td>
+            					<td>@lineDirections.direction_name</td>
+            					<td><a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@lineDirections.station_id&line_name=@lineDirections.line_name&direction=@lineDirections.direction_name">リンク</a></td>
+            				</tr>
+            				}
+            			</table>
+            		</td>
+            	</tr>
+            }
+            
+		}
+	</table>
+
+	
+    }
+ 		@if(respose.page != null) { 
+			<div>@helper.pagenate(respose)</div>
+		}	   
+    <div>条件を指定：<a href="@routes.S_SearchController.search().absoluteURL()">ボタン予定</a></div>
+	
+	<script type="text/javascript">
+		$(function() {
+
+			//setNowLocate(setPositionCallback, getPositionErrorCallback);
+			setMap1();
+		});
+		
+		function setMap1(){
+			$("#map").remove();
+			$("#mapCanvas").empty();
+			//id=mapを作成
+			$("#mapCanvas").append("<div id='map' class='plusMap'></div>");
+			var map = new google.maps.Map(document.getElementById("map"));
+			
+			var results_count = $("#results_count").val();
+			for(i = 0; i < results_count ; i++){
+				var r_lat = $("#lat" + i).val();
+				var r_lon = $("#lon" + i).val();
+				//alert("latitude" + r_lat + "" + "longitude" + r_lon);
+				addMarkerGeocodeSearch(
+						map,
+						r_lat,
+						r_lon,
+						i,
+						i+1);
+			}
+			
+		}
+	
+	
+		function setPositionCallback(position){
+        	// マップにマーカーを表示
+        	setMap(position.coords.latitude, position.coords.longitude);
+
+		}
+
+		//マップをセットする
+		function setMap(lat, lon){
+			//id=mapを削除
+			$("#map").remove();
+			$("#mapCanvas").empty();
+			// 検索結果が存在しない場合、処理を終了
+
+			//id=mapを作成
+			$("#mapCanvas").append("<div id='map' class='plusMap'></div>");
+			var map = new google.maps.Map(document.getElementById("map"));
+			var mapCount = 0;
+
+			//現在地を真ん中に表示
+			addMarkerGeocodeSearch(
+					map,
+					lat,
+					lon,
+					0,
+					"");
+			
+			var results_count = $("#results_count").val();
+				for(i = 0; i < results_count ; i++){
+					var r_lat = $("#lat" + i).val();
+					var r_lon = $("#lon" + i).val();
+					//alert("latitude" + r_lat + "" + "longitude" + r_lon);
+					addMarkerGeocodeSearch(
+							map,
+							r_lat,
+							r_lon,
+							i+1,
+							i+1);
+				}
+			
+			
+
+		}
+
+		//位置情報取得拒否の場合の処理
+		function getPositionErrorCallback(error){
+			var err_msg = "位置情報取得エラー";
+			switch(error.code){
+				case ERRORS_GET_POSITION_REFUSAL:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+			    case ERRORS_GET_POSITION_DEVICE:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+				case ERRORS_GET_POSITION_TIMEOUT:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+			}
+		}
+	</script>
+}

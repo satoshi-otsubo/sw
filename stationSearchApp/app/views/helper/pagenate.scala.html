@@ -1,0 +1,37 @@
+@(respose: models.response.S_SearchResponse)
+
+<ul class="pager pager-margin">
+@respose.page match {
+    case i if i <= 1 => { <li class="previous disabled"><a href="#">&larr; 前へ</a></li> }
+    case _ => {
+		@respose.action match{
+			case action if(action == 1) => {
+				<li class="previous"><a href="@routes.S_SearchController.searchStationsByLine()?@{"line_id=" + respose.line_id + "&page=" + (respose.page - 1)}">&larr; 前へ</a></li>
+			}
+			case action if(action == 2) => {
+				<li class="previous"><a href="@routes.S_SearchController.searchStationsByGeoCode()?@{"lat=" + respose.lat + "&lon=" + respose.lon + "&area=" + respose.area + "&page=" + (respose.page - 1)}">&larr; 前へ</a></li>
+			}
+			case action if(action == 3) => {
+				<li class="previous"><a href="@routes.S_SearchController.searchStationsByName()?@{"station_name=" + respose.station_name + "&page=" + (respose.page - 1)}">&larr; 前へ</a></li>
+			}
+		}
+    }
+}
+@respose.page match {
+    case i if i >= respose.maxPage => { <li class="next disabled"><a href="#">次へ &rarr;</a></li> }
+    case _ => {
+		@respose.action match{
+			case action if(action == 1) => {
+				<li class="next"><a href="@routes.S_SearchController.searchStationsByLine()?@{"line_id=" + respose.line_id + "&page=" + (respose.page + 1)}">次へ &rarr;</a></li>
+			}
+			case action if(action == 2) => {
+				<li class="next"><a href="@routes.S_SearchController.searchStationsByGeoCode()?@{"lat=" + respose.lat + "&lon=" + respose.lon + "&area=" + respose.area + "&page=" + (respose.page + 1)}">次へ &rarr;</a></li>
+			}
+			case action if(action == 3) => {
+				<li class="next"><a href="@routes.S_SearchController.searchStationsByName()?@{"station_name=" + respose.station_name + "&page=" + (respose.page + 1)}">次へ &rarr;</a></li>
+			}			
+		}
+    }
+}
+
+</ul>

@@ -1,0 +1,22 @@
+#mapCanvas .plusMap {
+  width: 100%;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.logo, .footer-content, .description, .copy-align {
+    text-align: center;
+    vertical-align: top;
+    
+}
+
+.disp-notice {
+	font-size:10px;
+}
+
+/* extend twitter bootstrap */
+
+.navbar {
+    border-radius: 0;
+    border: none;
+}
