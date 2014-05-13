@@ -1,8 +1,8 @@
 package models.response.api;
 
 import java.util.List;
+
 import models.response.R_TimeNotice;
-import models.response.R_TimeTable;
 
 /**
  * 
@@ -16,6 +16,7 @@ public class TimeTableApiResponse extends BaseApiResponse{
     public String kind;
     public String line_name;
     public String direction;
+    public List<String> directionList;
     public Integer totalTimes;
     public List<R_TimeNotice> noticeTrainKinds;
     public List<R_TimeNotice> noticeDestinations;

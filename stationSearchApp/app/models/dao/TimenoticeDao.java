@@ -1,8 +1,6 @@
 package models.dao;
 
-import models.entity.Station;
 import models.entity.Timenotice;
-import models.entity.Timetable;
 import play.db.ebean.Model;
 import play.libs.F.Option;
 import utils.ModelUtil;

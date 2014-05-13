@@ -81,6 +81,7 @@ create table timenotice (
 create table timetable (
   id                        bigint not null,
   station_id                bigint not null,
+  line_id                   bigint,
   kind                      integer not null,
   line_name                 varchar(255),
   direction                 varchar(255),

@@ -7,15 +7,9 @@ import utils.ModelUtil;
 import utils.OptionUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.RawSql;
-import com.avaje.ebean.RawSqlBuilder;
 import com.avaje.ebean.SqlRow;
 
 import static play.libs.F.*;
@@ -139,7 +133,7 @@ public class TimetableDao implements ModelDao<Timetable> {
 		List<Timetable> sqlRows = find.where().in("station_id", stationIds).eq("kind", 1).findList();
 		*/
 		List<Timetable> retTimeTables = new ArrayList<Timetable>();
-		Map<String, String> hashStationLine = new HashMap<String, String>();
+//		Map<String, String> hashStationLine = new HashMap<String, String>();
 		for(SqlRow row: sqlRows){
 		//for(Timetable row: sqlRows){
 			// 駅IDと路線名が同じものは結果に加えない
@@ -164,6 +158,47 @@ public class TimetableDao implements ModelDao<Timetable> {
 		}
 		return OptionUtil.apply(retTimeTables);
 	}	
+	
+	// 駅の方面を取得する
+	public Option<List<Timetable>> findStationLineDirections(Long station_id, Integer kind, String line_name){
+		String sql = "select distinct direction from timetable";
+
+		sql += " where station_id = " + station_id;
+		sql += " and kind = " + kind;
+		sql += " and line_name = '" + line_name + "'";
+		
+		List<SqlRow> sqlRows = Ebean.createSqlQuery(sql).findList();
+		List<Timetable> retTimeTables = new ArrayList<Timetable>();
+		for(SqlRow row: sqlRows){
+			Timetable tt = new Timetable();
+			tt.direction = row.getString("direction");
+			retTimeTables.add(tt);
+		}
+		return OptionUtil.apply(retTimeTables);
+	}
+	
+	
+    /**
+    *
+    * 路線名から駅IDを取得する
+    * @param 
+    * @return
+    */
+	public Option<List<Timetable>> findStationsByLineName(Integer kind, String line_name) {
+		String sql = "select distinct station_id from timetable";
+		sql += " where kind = " + kind;
+		sql += " and line_name = '" + line_name + "'";
+		
+		List<SqlRow> sqlRows = Ebean.createSqlQuery(sql).findList();
+		List<Timetable> retTimeTables = new ArrayList<Timetable>();
+		for(SqlRow row: sqlRows){
+			Timetable tt = new Timetable();
+			tt.station_id = row.getLong("station_id");
+			retTimeTables.add(tt);
+		}
+		return OptionUtil.apply(retTimeTables);
+	}
+	
 	
 	@Override
 	public Option<List<Timetable>> findWithPage(Integer pageSource) {

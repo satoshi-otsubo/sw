@@ -17,6 +17,7 @@ GET    /station_timetable                    controllers.TimeTableController.sta
 
 # API URL
 GET    /s_app/api/v1/station_timetable       controllers.api.ApiTimeTableController.stationTimeTable()
+GET    /s_app/api/v1/linesByLineName         controllers.api.ApiTimeTableController.linesByLineName()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

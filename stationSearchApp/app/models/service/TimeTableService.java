@@ -1,9 +1,6 @@
 package models.service;
 
-import play.*;
-import utils.ConfigUtil;
-import utils.GeoCodeRange;
-import utils.GeoCodeUtil;
+
 import utils.OptionUtil;
 
 import java.io.BufferedReader;
@@ -13,13 +10,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import common.api.ApiStatusConstants;
 
 import play.libs.F.Option;
 import models.dao.CompanyDao;
@@ -27,12 +23,15 @@ import models.dao.StationDao;
 import models.dao.TimenoticeDao;
 import models.dao.TimetableDao;
 import models.entity.Company;
+import models.entity.Line;
 import models.entity.Station;
 import models.entity.Timenotice;
 import models.entity.Timetable;
 import models.response.R_TimeNotice;
 import models.response.R_TimeTable;
 import models.response.TimeTableResponse;
+import models.response.api.ApiLineInfo;
+import models.response.api.LinesApiResponse;
 
 /**
  * サービスクラス
@@ -69,6 +68,7 @@ public class TimeTableService {
         
         // 路線を変換するマップをセット
         line_conv_map.put("東武伊勢崎線", "東武伊勢崎線(東武スカイツリーライン)");
+        line_conv_map.put("東武野田線", "東武野田線(東武アーバンパークライン)");
         line_conv_map.put("埼玉高速鉄道線", "埼玉高速鉄道");
         line_conv_map.put("日暮里・舎人ライナー", "舎人ライナー");
         line_conv_map.put("JR総武本線", "JR総武線快速");
@@ -76,6 +76,7 @@ public class TimeTableService {
         line_conv_map.put("東京モノレール", "東京モノレール羽田空港線");
         
         // 駅を変換するマップをセット
+        station_conv_map.put("鳩ヶ谷", "鳩ケ谷");
         station_conv_map.put("霞ヶ関", "霞ケ関");
         station_conv_map.put("押上〈スカイツリー前〉", "押上");
         station_conv_map.put("押上（スカイツリー前）", "押上");
@@ -83,9 +84,9 @@ public class TimeTableService {
         station_conv_map.put("明治神宮前〈原宿〉", "明治神宮前");
         
         // 特定の駅の場合に路線を変換する
-        station_line_conv_map.put("初台", "京王新線");
-        station_line_conv_map.put("幡ケ谷", "京王新線");
-        station_line_conv_map.put("笹塚", "京王");
+        //station_line_conv_map.put("初台", "京王新線");
+        //station_line_conv_map.put("幡ケ谷", "京王新線");
+        //station_line_conv_map.put("笹塚", "京王");
         
         //Option<List<Station>> opts = StationDao.use().findAll();
         Option<List<Station>> opts = StationDao.use().findByPref(new Long(11));
@@ -437,17 +438,24 @@ public class TimeTableService {
     			String tLineName = aLineName.replaceAll(campanyName, "");
     			String t2LineName = aLineName_h.replaceAll(campanyName, "");
         		if(lineName.matches(".*" + tLineName + ".*")){
-        			eLineFlg = true;
-        			timeTable = new Timetable();
-        			timeTable.line_name = lineName;
-        			//timeTableList.add(timeTable);
-        			return lineName;
+        			
+        			// 関係ない会社の路線でないかを判断
+        			if(reigaiLineName(lineName, campanyName)){
+            			eLineFlg = true;
+            			timeTable = new Timetable();
+            			timeTable.line_name = lineName;
+            			return lineName;
+        			}
+
         		}
     			if(lineName.matches(".*" + t2LineName + ".*")){
-        			eLineFlg = true;
-        			timeTable = new Timetable();
-        			timeTable.line_name = lineName;
-        			return lineName;
+        			// 関係ない会社の路線でないかを判断
+    				if(reigaiLineName(lineName, campanyName)){	 
+	        			eLineFlg = true;
+	        			timeTable = new Timetable();
+	        			timeTable.line_name = lineName;
+	        			return lineName;
+        			}
     			}
     		}	
     		// 路線名から括弧の内容を消した名前と一致するか
@@ -498,18 +506,25 @@ public class TimeTableService {
     			
     			if(tLineName != null){
 	        		if(lineName.matches(".*" + tLineName + ".*")){
-	        			eLineFlg = true;
-	        			timeTable = new Timetable();
-	        			timeTable.line_name = lineName;
-	        			return lineName;
+	        			// 関係ない会社の路線でないかを判断
+	        			if(reigaiLineName(lineName, campanyName)){	 
+		        			eLineFlg = true;
+		        			timeTable = new Timetable();
+		        			timeTable.line_name = lineName;
+		        			return lineName;
+	        			}
+
 	        		}
     			}
     			if(t2LineName != null){
 	    			if(lineName.matches(".*" + t2LineName + ".*")){
-	        			eLineFlg = true;
-	        			timeTable = new Timetable();
-	        			timeTable.line_name = lineName;
-	        			return lineName;
+	        			// 関係ない会社の路線でないかを判断
+	        			if(reigaiLineName(lineName, campanyName)){	    				
+		        			eLineFlg = true;
+		        			timeTable = new Timetable();
+		        			timeTable.line_name = lineName;
+		        			return lineName;
+	        			}
 	    			}
     			}
     		}
@@ -528,7 +543,18 @@ public class TimeTableService {
     	}else{
     		return null;
     	}
-    	
+	}
+	
+	// 関係ない会社の路線でないかを判断
+	private boolean reigaiLineName(String lineName, String campanyName){
+		if(lineName.equals("西武有楽町線")){
+			if(lineName.matches(".*" + campanyName + ".*")){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private List<Timetable> setDirectionInfo(String lineStr, String lineName){
@@ -784,6 +810,15 @@ public class TimeTableService {
 		result.line_name = line_name;
 		result.direction = direction; 
 		
+		//　方面一覧を取得する
+		Option<List<Timetable>> optDirectionList = TimetableDao.use().findStationLineDirections(station_id, kind, line_name);
+		if(optDirectionList.isDefined()){
+			result.directionList = new ArrayList<String>();
+			for(Timetable directon: optDirectionList.get()){
+				result.directionList.add(directon.direction);
+			}
+		}
+
 		//Map<String, String> goMap = new HashMap<String, String>();
 		// 駅の注意書きを取得
 		Option<List<Timenotice>> timenotices = TimenoticeDao.use().findByStationIdDirection(station_id, direction);
@@ -936,5 +971,44 @@ public class TimeTableService {
 		}
 	}
 	
+    /**
+    *
+    * 路線名から路線情報を取得する
+    * @param 
+    * @return
+    */
+	public Option<LinesApiResponse> getLinesByLineName(String line_name) throws Exception {
+		LinesApiResponse result  = new LinesApiResponse();
+		//　路線名から駅一覧を取得する
+		Option<List<Timetable>> optStationList = TimetableDao.use().findStationsByLineName(1, line_name);
+		if(optStationList.isDefined()){
+			// 駅IDリストから駅を取得する
+			List<Long> stationIds = new ArrayList<Long>();
+			for(Timetable tt : optStationList.get()){
+				stationIds.add(tt.station_id);
+			}
+			Option<List<Station>> optStationInfoList = StationDao.use().findByIds(stationIds);
+			if(optStationInfoList.isDefined()){
+				// 駅情報の路線名をみて、返却する路線情報リストを作成する
+				List<ApiLineInfo> lineInfos = new ArrayList<ApiLineInfo>();
+				Map<Long, Line> lineInfoMap = new HashMap<Long, Line>();  //路線情報を一意にするための辞書
+				for(Station st: optStationInfoList.get()){
+					if(!lineInfoMap.containsKey(st.line_id)){
+						// 返却データを作成
+						ApiLineInfo lineInfo = new ApiLineInfo();
+						lineInfo.line_id = st.line.id;
+						lineInfo.line_name = st.line.line_name;
+						lineInfos.add(lineInfo);
+						result.lineInfos = lineInfos;
+						
+						lineInfoMap.put(st.line_id, st.line);
+					}
+				}
+    			result.code = ApiStatusConstants.OK.getCode();
+    			result.status = ApiStatusConstants.OK.getMessage();
+			}
+		}
+		return OptionUtil.apply(result); 
+	}
 
 }

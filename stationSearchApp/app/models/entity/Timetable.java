@@ -3,8 +3,6 @@ package models.entity;
 import java.util.Date;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
 
@@ -25,6 +23,7 @@ public class Timetable extends Model {
     
 	@NotNull
 	public Long station_id;
+	public Long line_id;
 /*
 	@ManyToOne
     @JoinColumn(name = "station_id")

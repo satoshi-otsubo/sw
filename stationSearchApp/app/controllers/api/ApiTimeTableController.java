@@ -5,27 +5,31 @@ import static play.data.Form.form;
 import java.util.ArrayList;
 
 import common.api.ApiStatusConstants;
-import play.Logger;
 import play.data.Form;
 import play.libs.F.Option;
 import play.mvc.*;
 import utils.calendar.CalendarUtil;
-import models.request.TimeTableRequest;
+//import models.request.TimeTableRequest;
+import models.request.wapi.StationSearchAppApiRequest;
 import models.response.R_TimeTable;
 import models.response.TimeTableResponse;
 import models.response.api.ApiTimeInfo;
+import models.response.api.LinesApiResponse;
 import models.response.api.TimeTableApiResponse;
 import models.service.TimeTableService;
 import net.arnx.jsonic.JSON;
 
 public class ApiTimeTableController extends Controller{
-
-
-    
-    // 時刻表情報取得
+	
+    /**
+    *
+    * 時刻表情報取得
+    * @param 
+    * @return
+    */
     public static Result stationTimeTable(){
-    	Form<TimeTableRequest> form = form(TimeTableRequest.class).bindFromRequest();
-    	TimeTableRequest data = form.get();
+    	Form<StationSearchAppApiRequest> form = form(StationSearchAppApiRequest.class).bindFromRequest();
+    	StationSearchAppApiRequest data = form.get();
     	
     	// バリデーションなどの処理は後で
     	
@@ -58,6 +62,8 @@ public class ApiTimeTableController extends Controller{
     			result.kind = sRes.kind;
     			result.line_name = sRes.line_name;
     			result.direction = sRes.direction;
+    			result.directionList = sRes.directionList;
+    			
     			result.totalTimes = sRes.totalTimes;
     			result.noticeTrainKinds = sRes.noticeTrainKinds;
     			result.noticeDestinations = sRes.noticeDestinations;
@@ -100,8 +106,37 @@ public class ApiTimeTableController extends Controller{
     	if(retJSON != null){
     		return ok(retJSON);
     	}
-    	
     	return null;
     }
 
+    /**
+    *
+    * 路線名から路線情報を取得（時刻表からのリクエスト）
+    * @param 
+    * @return
+    */
+    public static Result linesByLineName(){
+    	Form<StationSearchAppApiRequest> form = form(StationSearchAppApiRequest.class).bindFromRequest();
+    	StationSearchAppApiRequest data = form.get();
+    	if(data.line_name == null){
+    		data.line_name = form.data().get("line_name");
+    	}
+    	String retJSON = null;
+    	
+    	TimeTableService service = new TimeTableService();
+    	Option<LinesApiResponse> oLinesApiResponse = null;
+    	
+    	try{
+    		oLinesApiResponse = service.getLinesByLineName(data.line_name);
+    		if(oLinesApiResponse.isDefined()){
+    			retJSON = JSON.encode(oLinesApiResponse.get(), true);
+    		}
+    	}catch(Exception e){
+    		//controllers.api.routes.ApiTimeTableController.stationTimeTable()
+    	}
+    	if(retJSON != null){
+    		return ok(retJSON);
+    	}
+    	return null;
+    }
 }

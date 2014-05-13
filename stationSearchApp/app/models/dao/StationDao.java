@@ -2,7 +2,6 @@ package models.dao;
 
 import models.entity.Station;
 import play.db.ebean.Model;
-import play.libs.F;
 import utils.ModelUtil;
 import utils.OptionUtil;
 import utils.PageUtil;
@@ -11,6 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.SqlRow;
 
 import static play.libs.F.*;
 
@@ -129,6 +131,17 @@ public class StationDao implements ModelDao<Station> {
     public Option<List<Station>> findAll(){
     	Model.Finder<Long, Station> find = ModelUtil.getFinder(Station.class);
     	return OptionUtil.apply(find.all());
+    }
+    
+    /**
+    *
+    * 駅IDリストから駅情報を取得する
+    * @param 
+    * @return
+    */
+    public Option<List<Station>> findByIds(List<Long> stationIds){
+    	Model.Finder<Long, Station> find = ModelUtil.getFinder(Station.class);
+    	return OptionUtil.apply(find.fetch("line").where().in("id", stationIds).findList());
     }
     		
     /**

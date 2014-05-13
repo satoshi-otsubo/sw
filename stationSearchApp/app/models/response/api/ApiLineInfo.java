@@ -1,12 +1,11 @@
-package models.response;
-
+package models.response.api;
 /**
- * 検索結果表示用　路線
+ * 
  *
  * @author 
  * @since 
  */
-public class R_Line {
+public class ApiLineInfo{
 	public Long line_id;
     public String line_name;
 }

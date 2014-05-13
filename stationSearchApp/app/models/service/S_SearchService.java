@@ -1,9 +1,7 @@
 package models.service;
 
-import play.*;
 import common.Constants;
-import common.exception.AppException;
-import utils.ConfigUtil;
+
 import utils.GeoCodeRange;
 import utils.GeoCodeUtil;
 import utils.OptionUtil;
@@ -144,6 +142,10 @@ public class S_SearchService {
 					// キーになる文字列を作成
 					String lineDirectionKey = timeTable.line_name + timeTable.direction;
 					if(!stationLineDirectionMap.containsKey(lineDirectionKey)){
+						// TODO　駅IDから駅情報を取得し、路線名が一致しないものは格納しないようにする
+						
+						
+						
 						stationLineDirectionMap.put(lineDirectionKey, timeTable);
 						
 						R_LineDirection lineDirection = new R_LineDirection();
@@ -299,6 +301,8 @@ public class S_SearchService {
 			if(respose.maxPage > 0){
 				if(respose.page == respose.maxPage){
 					if(i < maxPage){
+						stations.add(respose.stations.get(getStartCount));
+					}else if(maxPage == 0){
 						stations.add(respose.stations.get(getStartCount));
 					}
 				}else{

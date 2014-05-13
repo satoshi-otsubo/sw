@@ -1,4 +1,4 @@
-package models.request;
+package models.request.wapi;
 
 /**
  * 時刻表リクエストのフォームモデル
@@ -6,7 +6,7 @@ package models.request;
  * @author 
  * @since 
  */
-public class TimeTableRequest {
+public class StationSearchAppApiRequest {
     public String station_id;
     public String kind;
     public String line_name;
