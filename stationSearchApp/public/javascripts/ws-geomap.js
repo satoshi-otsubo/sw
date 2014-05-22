@@ -51,7 +51,7 @@ var addMarkerGeocodeSearch = function(map, latitude, longitude, mapCount, marker
 	    
 	    iconUrl = "http://waox.main.jp/png/source-bluedot.png";
 	}else{
-		iconUrl = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + markerTitle + "|FA8072|000000";
+		iconUrl = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + markerTitle + "|3366FF|ffffff";
 	}
 
 	var marker = new google.maps.Marker({
