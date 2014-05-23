@@ -37,9 +37,9 @@ var addMarkerGeocodeSearch = function(map, latitude, longitude, mapCount, marker
 	var iconUrl = "";
 	var iZoom = 0;
 	
-	iZoom = 14;
+	iZoom = 12;
 	
-	if(mapCount == 0){
+	if(markerTitle == 1){
 	    //現在位置をマップに表示
 	    var latlng = new google.maps.LatLng(latitude, longitude);
 	    var myOptions = {
@@ -49,26 +49,40 @@ var addMarkerGeocodeSearch = function(map, latitude, longitude, mapCount, marker
 	    };
 	    map.setOptions(myOptions);	
 	    
-	    iconUrl = "http://waox.main.jp/png/source-bluedot.png";
+	    // 現在値は表示しない
+	    //iconUrl = "http://waox.main.jp/png/source-bluedot.png";
+	    iconUrl = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + markerTitle + "|3366FF|ffffff";    
 	}else{
 		iconUrl = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + markerTitle + "|3366FF|ffffff";
 	}
 
 	var marker = new google.maps.Marker({
 		position: new google.maps.LatLng(latitude, longitude),
-		//icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + markerTitle + '|FA8072|000000',
 		icon: iconUrl,
 		map: map
 	});	
 	
-	
+	if(mapCount > 0){
+		// マーカーのクリック時のイベント
+		google.maps.event.addListener(marker, 'click', function(){
+			markerClickFunction(markerTitle, mapCount);
+		});
+	}
 }
 
-function markerClickFunction(markerTitle) {
-    //alert(markerTitle);
-	var offset = 50;
+function markerClickFunction(markerTitle, mapCount) {
+	var offset = 0;
 	var target = $("#" + markerTitle).offset().top - offset;
-	$('html, body').animate({scrollTop:target}, 500);
+	
+	for(i = 1; i <= mapCount ; i++){
+		$("#" + i).removeClass("stationPanel-heading-active");
+		$("#" + i).addClass("stationPanel-heading");
+	}
+	
+	$("#" + markerTitle).removeClass("stationPanel-heading");
+	$("#" + markerTitle).addClass("stationPanel-heading-active");
+	
+	$('html, body').animate({scrollTop:target}, 100);
   }
 
 //ブラウザが位置情報取得に対応しているか

@@ -10,8 +10,8 @@
 	if(respose != null){
 		for(station <- respose.stations){
 			var lineName = ""
-			dispHtml.append("<div id='stationPanel" + (stationCount + 1) + "' class='stationPanel'>")
-			dispHtml.append("<div class='stationPanel-heading'><div class='row'>")
+			dispHtml.append("<div class='stationPanel'>")
+			dispHtml.append("<div id='" + (stationCount + 1) + "' class='stationPanel-heading'><div class='row'>")
 			dispHtml.append("<div class='col-xs-10'>" + station.station_name + "</div>")
 			dispHtml.append("<div class='col-xs-2 text-right'><img border='0' width='18px' height='25px' src='http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" +  (stationCount + 1) + "|3366FF|ffffff'></div>")
 			dispHtml.append("</div></div>")
@@ -57,7 +57,7 @@
 
 }
 
-@main("Welcome to Play") {
+@main("駅マップ(検索結果)") {
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/ws-geomap.js")"></script>
 	<script src="https://maps-api-ssl.google.com/maps/api/js?v=3&sensor=true" type="text/javascript"></script>
@@ -84,8 +84,10 @@
 	<script type="text/javascript">
 		$(function() {
 			
+			// ブラウザの高さを取得
 			wH = $(window).height() * 0.6;
-			setMap1();
+			// マップ上に駅のピンを立てて表示する
+			setMap();
 			
 			mapDispButtonAction(wH, 0);
 			
@@ -123,7 +125,7 @@
 			}
 		}
 		
-		function setMap1(){
+		function setMap(){
 			$("#map").remove();
 			$("#mapCanvas").empty();
 			//id=mapを作成
@@ -138,54 +140,10 @@
 						map,
 						r_lat,
 						r_lon,
-						i,
+						results_count,
 						i+1);
 			}
 			
-		}
-	
-	
-		function setPositionCallback(position){
-        	// マップにマーカーを表示
-        	setMap(position.coords.latitude, position.coords.longitude);
-
-		}
-
-		//マップをセットする
-		function setMap(lat, lon){
-			//id=mapを削除
-			$("#map").remove();
-			$("#mapCanvas").empty();
-			// 検索結果が存在しない場合、処理を終了
-
-			//id=mapを作成
-			$("#mapCanvas").append("<div id='map' class='plusMap'></div>");
-			var map = new google.maps.Map(document.getElementById("map"));
-			var mapCount = 0;
-
-			//現在地を真ん中に表示
-			addMarkerGeocodeSearch(
-					map,
-					lat,
-					lon,
-					0,
-					"");
-			
-			var results_count = $("#results_count").val();
-				for(i = 0; i < results_count ; i++){
-					var r_lat = $("#lat" + i).val();
-					var r_lon = $("#lon" + i).val();
-					//alert("latitude" + r_lat + "" + "longitude" + r_lon);
-					addMarkerGeocodeSearch(
-							map,
-							r_lat,
-							r_lon,
-							i+1,
-							i+1);
-				}
-			
-			
-
 		}
 
 		//位置情報取得拒否の場合の処理
