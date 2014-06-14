@@ -3,6 +3,7 @@ package controllers;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.Constants;
 import common.exception.AppException;
 import common.exception.AppErrorConstants.AppError;
 import play.data.Form;
@@ -10,8 +11,10 @@ import play.libs.F.Option;
 import play.mvc.*;
 import views.html.*;
 import models.request.S_SearchRequest;
+import models.response.R_Company;
 import models.response.R_Line;
 import models.response.R_Prefecture;
+import models.response.R_Prefecturearea;
 import models.response.R_Station;
 import models.response.S_SearchConditionsResponse;
 import models.response.S_SearchResponse;
@@ -28,10 +31,12 @@ public class S_SearchController extends BaseController {
     */
     public static Result search(){
     	try{
-	    	Option<List<R_Prefecture>> result = new S_SearchService().getPrefectureList();
+    		// 都道府県地域(一緒に都道府県も)を取得
+    		Option<List<R_Prefecturearea>> result = new S_SearchService().getPrefectureareaList();
+    		
 	    	if(result.isDefined()){
 	    		S_SearchConditionsResponse respose = new S_SearchConditionsResponse();
-	    		respose.prefectures = result.get();
+	    		respose.prefectureareas = result.get();
 	    		
 	    		Form<S_SearchRequest> request = new Form<S_SearchRequest>(S_SearchRequest.class);
 	    		return ok(s_search.render("s_search_conditions.", respose, request));
@@ -76,6 +81,7 @@ public class S_SearchController extends BaseController {
     	return fail(routes.S_SearchController.search(), "error", "路線検索でエラーが発生しました。");
     }
     /**
+    *　位置情報検索
     *
     * @param 
     * @return
@@ -104,7 +110,7 @@ public class S_SearchController extends BaseController {
 	    	if(result.isDefined()){
 	    		
 	    		respose.stations = result.get();
-	    		respose.action = 2;
+	    		respose.action = Constants.STATION_SEARCH_GEOCODE;
 	    		respose.lat = data.lat;
 	    		respose.lon = data.lon;
 	    		respose.area = data.area;
@@ -123,8 +129,7 @@ public class S_SearchController extends BaseController {
     	}catch(Exception e){
     		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
     	}
-    	
-    	return fail(routes.S_SearchController.search(), "error", "位置情報検索でエラーが発生しました。");
+    	return fail(routes.S_SearchController.search(), "error", "検索結果が存在しません。");
     }
     
     /**
@@ -135,8 +140,8 @@ public class S_SearchController extends BaseController {
     public static Result searchStationsByName(){
     	Form<S_SearchRequest> form = form(S_SearchRequest.class).bindFromRequest();
     	S_SearchRequest data = form.get();
-    	if(data.station_name == null){
-    		return fail(routes.S_SearchController.search(), "error", "駅名が入力されていない。");
+    	if(data.station_name == null || data.station_name.isEmpty()){
+    		return fail(routes.S_SearchController.search(), "error", "駅名が入力されていません。");
     	}
     	S_SearchService service = new S_SearchService();
     	try{
@@ -154,13 +159,13 @@ public class S_SearchController extends BaseController {
 	    		respose.page = data.page;
 	    		service.setResponsePageData(respose);
 	    		return ok(s_search_result.render("searchStationsByName.", respose));
-	    	}
+	    	}	
 	    }catch(AppException e){
 	    	return appError(e);
     	}catch(Exception e){
     		return appError(new AppException(AppError.UNKNOWN_ERROR, e, ""));
     	}
-    	return fail(routes.S_SearchController.search(), "error", "駅名検索でエラーが発生しました。");
+    	return fail(routes.S_SearchController.search(), "error", "検索結果が存在しません。");
     }
 
     /**
@@ -176,13 +181,14 @@ public class S_SearchController extends BaseController {
     	try{
         	Option<R_Prefecture> prefecture = new S_SearchService().getPrefecture(prefectureId);
         	if(prefecture.isDefined()){
-            	// 都道府県idから都道府県に属する路線リストを取得
-            	Option<List<R_Line>> lines = new S_SearchService().getLineListByPrefecture(prefecture.get().id);
-            	if(lines.isDefined()){
+            	// 都道府県idから都道府県に属する会社毎の路線リストを取得
+        		Option<List<R_Company>> companyList = new S_SearchService().getLineListByPrefecture(prefecture.get().id);
+        		if(companyList.isDefined()){
             		List<R_Prefecture> prefectures = new ArrayList<R_Prefecture>();
             		
-            		// 都道府県が持っている路線リストをセット
-            		prefecture.get().lines = lines.get();
+            		// 都道府県が持っている会社毎の路線リストをセット
+            		prefecture.get().companyList = companyList.get();
+            		
             		prefectures.add(prefecture.get());
             		respose.prefectures = prefectures;
             		

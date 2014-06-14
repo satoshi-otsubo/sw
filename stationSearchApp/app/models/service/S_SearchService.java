@@ -1,7 +1,6 @@
 package models.service;
 
 import common.Constants;
-
 import utils.GeoCodeRange;
 import utils.GeoCodeUtil;
 import utils.OptionUtil;
@@ -16,14 +15,18 @@ import java.util.Map;
 import play.libs.F.None;
 import play.libs.F.Option;
 import models.dao.PrefectureDao;
+import models.dao.PrefectureareaDao;
 import models.dao.StationDao;
 import models.dao.TimetableDao;
 import models.entity.Prefecture;
+import models.entity.Prefecturearea;
 import models.entity.Station;
 import models.entity.Timetable;
+import models.response.R_Company;
 import models.response.R_Line;
 import models.response.R_LineDirection;
 import models.response.R_Prefecture;
+import models.response.R_Prefecturearea;
 import models.response.R_Station;
 import models.response.S_SearchResponse;
 import models.setting.S_SearchSetting;
@@ -187,6 +190,40 @@ public class S_SearchService {
 	
     /**
     * 
+    * 都道府県地域を取得する
+    * @param 
+    * @return
+    */
+	public Option<List<R_Prefecturearea>> getPrefectureareaList() throws Exception{
+		Option<List<Prefecturearea>> prefectureareas = PrefectureareaDao.use().findAll();
+		if(prefectureareas.isDefined()){
+			List<R_Prefecturearea> rPrefectureList = new ArrayList<R_Prefecturearea>();
+			for(Prefecturearea p: prefectureareas.get()){
+				// 都道府県地域を作成
+				R_Prefecturearea r = new R_Prefecturearea();
+				r.id = p.id;
+				r.area_name = p.area_name;
+				
+				// 都道府県地域に都道府県を追加する
+				for(Prefecture prefecture: p.prefectures){
+					R_Prefecture r_prefecture = new R_Prefecture();
+					r_prefecture.id = prefecture.id;
+					r_prefecture.pref_name = prefecture.pref_name;
+					if(r.prefectures == null){
+						r.prefectures = new ArrayList<R_Prefecture>();
+					}
+					r.prefectures.add(r_prefecture);
+				}
+				
+				rPrefectureList.add(r);
+			}
+			return OptionUtil.apply(rPrefectureList);
+		}
+		return new None<List<R_Prefecturearea>>();
+	}
+	
+    /**
+    * 
     * 都道府県を取得する
     * @param 
     * @return
@@ -227,11 +264,11 @@ public class S_SearchService {
 	
     /**
     * 
-    * 都道府県コードから路線を取得する
+    * 都道府県コードから鉄道会社毎の路線を取得する
     * @param 
     * @return
     */
-	public Option<List<R_Line>> getLineListByPrefecture(Long prefectureId) throws Exception {
+	public Option<List<R_Company>> getLineListByPrefecture(Long prefectureId) throws Exception {
 		Option<List<Station>> prefStations = StationDao.use().findByPref(prefectureId);
 		if(prefStations.isDefined()){
 			List<Long> stationIds = new ArrayList<Long>();
@@ -248,7 +285,9 @@ public class S_SearchService {
 				}
 			}
 			// 路線名でマージするためのマップ
-			Map<String, String> lineHashMap = new HashMap<String, String>();
+			Map<String, R_Line> lineHashMap = new HashMap<String, R_Line>();
+			// 会社でマージするためのマップ
+			Map<Long, R_Company> companyHashMap = new HashMap<Long, R_Company>();
 			List<R_Line> rLineInfos = new ArrayList<R_Line>();
 			for(Station s: prefStations.get()){
 				if(lineInfoMap.containsKey(s.id)){
@@ -256,18 +295,39 @@ public class S_SearchService {
 					rl.line_id = s.line_id;
 					//rl.line_name = lineInfoMap.get(s.id).line_name;
 					rl.line_name = s.line.line_name;
+					rl.company = s.line.company;
 					
 					if(!lineHashMap.containsKey(rl.line_name)){
 						rLineInfos.add(rl);
-						lineHashMap.put(rl.line_name, rl.line_name);
+						lineHashMap.put(rl.line_name, rl);
 					}
-					
 				}
 			}
 			
-			return OptionUtil.apply(rLineInfos);
+			// 鉄道会社に所属する路線を入れていく
+			for(String mapKey: lineHashMap.keySet()){
+				R_Line rl = lineHashMap.get(mapKey);
+				System.out.println(rl.company.id + " : " + rl.company.company_name + " : "+ rl.line_id + " : " + rl.line_name);
+				if(!companyHashMap.containsKey(rl.company.id)){
+					R_Company r_company = new R_Company();
+					r_company.id = rl.company.id;
+					r_company.company_name = rl.company.company_name;
+					r_company.lines = new ArrayList<R_Line>();
+					r_company.lines.add(rl);
+					companyHashMap.put(rl.company.id, r_company);
+				}else{
+					companyHashMap.get(rl.company.id).lines.add(rl);
+				}
+			}
+	
+			List<R_Company> companyList = new ArrayList<R_Company>();
+			for(Long mapKey: companyHashMap.keySet()){
+				companyList.add(companyHashMap.get(mapKey));
+			}
+
+			return OptionUtil.apply(companyList);
 		}
-		return new None<List<R_Line>>();
+		return new None<List<R_Company>>();
 	}
 	
     /**

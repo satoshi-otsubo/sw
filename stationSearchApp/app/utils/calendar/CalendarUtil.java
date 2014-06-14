@@ -104,10 +104,12 @@ public class CalendarUtil {
     			retBoolean =  false;
     		}else{
     			CalendarJSON decodeJSON = JSON.decode(jsonStr, CalendarJSON.class);
-    			for(CalendarDayJSON hDay: decodeJSON.result.day){
-    				if(d == Integer.parseInt(hDay.mday)){
-    					retBoolean = true;
-    				}
+    			if(Integer.parseInt(decodeJSON.result.hdays) > 0){
+        			for(CalendarDayJSON hDay: decodeJSON.result.day){
+        				if(d == Integer.parseInt(hDay.mday)){
+        					retBoolean = true;
+        				}
+        			}
     			}
     			//Logger.info(jsonStr);
     		}

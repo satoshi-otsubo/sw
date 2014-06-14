@@ -63,6 +63,31 @@
 	<script src="https://maps-api-ssl.google.com/maps/api/js?v=3&sensor=true" type="text/javascript"></script>
 	
 	<div class="text-right">
+		@if(respose != null) { 
+			@if(respose.action == 2){
+				半径：
+				@if(respose.area == "1000"){
+					<span class="label label-primary">1Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=1000&page=1">1Km</a>
+				}
+				@if(respose.area == "3000"){
+					<span class="label label-primary">3Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=3000&page=1">3Km</a>
+				}
+				@if(respose.area == "5000"){
+					<span class="label label-primary">5Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=5000&page=1">5Km</a>
+				}
+				@if(respose.area == "10000"){
+					<span class="label label-primary">10Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=10000&page=1">10Km</a>
+				}
+			}
+		} 
 		<button id="mapDispButton" type="button" class="btn btn-default btn-sm"><span id="mapDispText"></span></button>
 	</div>
 	<!-- マップ表示領域 -->
@@ -79,7 +104,6 @@
 	@if(respose.page != null) { 
 		<div>@helper.pagenate(respose)</div>
 	}	   
-    <div>条件を指定：<a href="@routes.S_SearchController.search().absoluteURL()">ボタン予定</a></div>
 
 	<script type="text/javascript">
 		$(function() {

@@ -41,7 +41,14 @@ create table line (
 create table prefecture (
   id                        bigint not null,
   pref_name                 varchar(255) not null,
+  prefecturearea_id         bigint,
   constraint pk_prefecture primary key (id))
+;
+
+create table prefecturearea (
+  id                        bigint not null,
+  area_name                 varchar(255) not null,
+  constraint pk_prefecturearea primary key (id))
 ;
 
 create table station (
@@ -101,6 +108,8 @@ create sequence line_seq;
 
 create sequence prefecture_seq;
 
+create sequence prefecturearea_seq;
+
 create sequence station_seq;
 
 create sequence timenotice_seq;
@@ -109,10 +118,12 @@ create sequence timetable_seq;
 
 alter table line add constraint fk_line_company_1 foreign key (company_id) references company (id);
 create index ix_line_company_1 on line (company_id);
-alter table station add constraint fk_station_line_2 foreign key (line_id) references line (id);
-create index ix_station_line_2 on station (line_id);
-alter table station add constraint fk_station_prefecture_3 foreign key (prefecture_id) references prefecture (id);
-create index ix_station_prefecture_3 on station (prefecture_id);
+alter table prefecture add constraint fk_prefecture_prefecturearea_2 foreign key (prefecturearea_id) references prefecturearea (id);
+create index ix_prefecture_prefecturearea_2 on prefecture (prefecturearea_id);
+alter table station add constraint fk_station_line_3 foreign key (line_id) references line (id);
+create index ix_station_line_3 on station (line_id);
+alter table station add constraint fk_station_prefecture_4 foreign key (prefecture_id) references prefecture (id);
+create index ix_station_prefecture_4 on station (prefecture_id);
 
 
 
@@ -123,6 +134,8 @@ drop table if exists company cascade;
 drop table if exists line cascade;
 
 drop table if exists prefecture cascade;
+
+drop table if exists prefecturearea cascade;
 
 drop table if exists station cascade;
 
@@ -135,6 +148,8 @@ drop sequence if exists company_seq;
 drop sequence if exists line_seq;
 
 drop sequence if exists prefecture_seq;
+
+drop sequence if exists prefecturearea_seq;
 
 drop sequence if exists station_seq;
 

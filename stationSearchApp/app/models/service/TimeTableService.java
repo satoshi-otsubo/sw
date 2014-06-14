@@ -89,7 +89,7 @@ public class TimeTableService {
         //station_line_conv_map.put("笹塚", "京王");
         
         //Option<List<Station>> opts = StationDao.use().findAll();
-        Option<List<Station>> opts = StationDao.use().findByPref(new Long(11));
+        Option<List<Station>> opts = StationDao.use().findByPref(new Long(13));
         
         int iCount = 0;
         for(Station s: opts.get()){

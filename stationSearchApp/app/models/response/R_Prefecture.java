@@ -12,4 +12,5 @@ public class R_Prefecture {
     public Long id;
 	public String pref_name;
 	public List<R_Line> lines;
+	public List<R_Company> companyList;
 }

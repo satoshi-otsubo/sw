@@ -5,29 +5,111 @@
 
 @main("駅マップ(検索)") {
 	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
-    
-    <h2 class="copy-align">@message</h2>
-    @helper.form(action = routes.S_SearchController.searchStationsByName){
-    	@(helper.inputText(
-    		field = request("station_name")
-    	))
-    	<input type="submit">
-    }
-	<div>駅名検索設置予定</div>
-	<table class="table table-striped">
-		<tr>
-		    <th class="table-column-first">id</th>
-		    <th class="table-column-second">都道府県名</th>
-		</tr>
- 		@for((entry,index) <- respose.prefectures.zipWithIndex) {
-            <tr>
-                <td>@entry.id</td>
-                <td><a href="@routes.S_SearchController.lineListSearchByPrefecture(entry.id).absoluteURL()">@entry.pref_name</a></td>
-            </tr>  
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/ws-geomap.js")"></script>
+	<script src="https://maps-api-ssl.google.com/maps/api/js?v=3&sensor=true" type="text/javascript"></script>
+	
+    <div class="row">
+	    <div class="col-xs-12 headderStationNameBack">
+	    	<div class="col-xs-12">
+	    		<div class="headderStationName">駅を探す</div>
+	    	</div>
+	    </div>
+	    
+		<div id="geoSearchConditions">	
+		    <div class="col-xs-12 headderLineNameBack">
+		    	<div class="headderLineName">現在地から探す</div>
+		    </div>
+		    &nbsp;&nbsp;
+		    <a href="javascript:searchStationsByGeoCode(1000);">1Km</a>&nbsp;
+		    <a href="javascript:searchStationsByGeoCode(3000);">3Km</a>&nbsp;
+		    <a href="javascript:searchStationsByGeoCode(5000);">5Km</a>&nbsp;
+		    <a href="javascript:searchStationsByGeoCode(10000);">10Km</a>
+		</div>	    	
+		    
+	    <div class="col-xs-12 headderLineNameBack">
+	    	<div class="headderLineName">駅名から探す</div>
+	    </div>
+	    
+	    @helper.form(action = routes.S_SearchController.searchStationsByName,args='class->"helper_form"){
+
+	    	@(helper.inputText(
+	    		field = request("station_name"),
+	    		args = '_label -> "",
+	    		'id -> "id_station_name",
+	    		'size -> 25
+	    	))
+	    	<button type="submit" class="btn btn-default btn-sm">
+	    		検索
+	    	</button>
+	    }
+
+	    <div class="col-xs-12 headderLineNameBack">
+	    	<div class="headderLineName">都道府県から探す</div>
+	    </div>
+	</div>
+	
+	@for((prefArea,index) <- respose.prefectureareas.zipWithIndex) {
+	<div class="row searchListBorder">
+		<div class="col-xs-12 searchListHeadderBack">
+			<div class="searchListHeadderContent">@prefArea.area_name</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="searchListContent">
+				<div class="row">
+					@for(pref <- prefArea.prefectures) {
+						<div class="col-xs-3 col-sm-2 col-md-1">
+							<a href="@routes.S_SearchController.lineListSearchByPrefecture(pref.id).absoluteURL()">
+							@pref.pref_name
+							</a>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
 	}
-	</table>
 	
 	<script type="text/javascript">
-
+		// 位置情報検索範囲
+		var area = 0;
+			
+		$(function() {
+			// 位置情報に対応していない場合、位置検索条件を表示しない
+			if(geolocationExist() == false){
+				$("#geoSearchConditions").html("");
+			}
+		});
+		
+		// 位置情報検索
+		function searchStationsByGeoCode(prm_area){
+			area = prm_area;
+			setNowLocate(setPositionCallback, getPositionErrorCallback);
+		}
+		
+		function setPositionCallback(position){
+			var lat = position.coords.latitude;
+			var lon = position.coords.longitude;
+			var param = "?lat="+lat +"&lon="+lon +"&page=1&area=" + area;
+			window.location = "@routes.S_SearchController.searchStationsByGeoCode()" + param;
+		}
+		
+		//位置情報取得拒否の場合の処理
+		function getPositionErrorCallback(error){
+			var err_msg = "位置情報取得エラー";
+			switch(error.code){
+				case ERRORS_GET_POSITION_REFUSAL:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+			    case ERRORS_GET_POSITION_DEVICE:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+				case ERRORS_GET_POSITION_TIMEOUT:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+			}
+		}
 	</script>
 }

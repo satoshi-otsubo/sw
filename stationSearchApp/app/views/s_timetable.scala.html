@@ -11,7 +11,7 @@
 	<input type="hidden" id="timeSize" value="@respose.totalTimes">
 	<input type="hidden" id="selectCount" value="">
 	
-		<div class="row">
+	<div class="row">
 		<div class="col-xs-12 headderStationNameBack">
 			<div class="row">
 				<div class="col-xs-12">
@@ -43,56 +43,53 @@
 			</div>
 		</div>
 			
-			<div class="col-xs-12">
-				<div class="headderDirection">
-				@for(direction <- respose.directionList) {
-					@if(respose.direction == direction){
-						<button type="button" class="btn btn-primary btn-sm disabled">@respose.direction</button>
-					}else{
-						<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@direction" role="button" class="btn btn-default btn-sm">@direction</a>
-					}
+		<div class="col-xs-12">
+			<div class="headderDirection">
+			@for(direction <- respose.directionList) {
+				@if(respose.direction == direction){
+					<button type="button" class="btn btn-primary btn-sm disabled">@respose.direction</button>
+				}else{
+					<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@direction" role="button" class="btn btn-default btn-sm">@direction</a>
 				}
-				</div>
+			}
 			</div>
-			
-
-			
-			<div class="col-xs-12">
-	  			<p class="text-center dispTimeCounterAnimate">
-	  				<span class="label label-primary" id="dispSELabel"></span><span class="font-disp-time" id="dispTime"></span>発
-	  				
-	  			</p>
-	  		</div>
-	  		
-	  		<div class="col-xs-12">
-	  			<p class="text-center dispTimeCounterAnimate">
-	  			<span id="dispTrn" class="label label-primary"></span>
-	  			<span id="dispMark"></span>
-	  			<span class="font-disp-time" id="dispSta"></span>行き
-	  			</p>
-	  		</div>
-	  		
-	  		<div class="col-xs-2 text-center" id="previousTime">
-	  			<button type="button" class="btn btn-default btn-sm">
-	  				<span class="glyphicon glyphicon-chevron-left"></span>
-	  			</button>
-	  		</div>
-	  		
-	  		<div class="col-xs-8">
-	  			<p class="font-disp-time-count text-center dispTimeCounterAnimate" id="countTime">
-	  			</p>
-	  		</div>
-	  		
-	  		<div class="col-xs-2 text-center" id="nextTime">
-	  			
-	  			<button type="button" class="btn btn-default btn-sm">
-	  				<span class="glyphicon glyphicon-chevron-right"></span>
-	  			</button>
-	  		</div>
-	  		
-
-	  		
 		</div>
+			
+
+			
+		<div class="col-xs-12">
+  			<p class="text-center dispTimeCounterAnimate">
+  				<span class="label label-primary" id="dispSELabel"></span><span class="font-disp-time" id="dispTime"></span>発
+  				
+  			</p>
+  		</div>
+	  		
+  		<div class="col-xs-12">
+  			<p class="text-center dispTimeCounterAnimate">
+  			<span id="dispTrn" class="label label-primary"></span>
+  			<span id="dispMark"></span>
+  			<span class="font-disp-time" id="dispSta"></span>行き
+  			</p>
+  		</div>
+	  		
+  		<div class="col-xs-2 text-center" id="previousTime">
+  			<button type="button" class="btn btn-default btn-sm">
+  				<span class="glyphicon glyphicon-chevron-left"></span>
+  			</button>
+  		</div>
+	  		
+  		<div class="col-xs-8">
+  			<p class="font-disp-time-count text-center dispTimeCounterAnimate" id="countTime">
+  			</p>
+  		</div>
+	  		
+  		<div class="col-xs-2 text-center" id="nextTime">
+  			
+  			<button type="button" class="btn btn-default btn-sm">
+  				<span class="glyphicon glyphicon-chevron-right"></span>
+  			</button>
+  		</div>
+	</div>
  	
 	<div id="dispTimeTable">
 		<table class="table table-bordered table-striped">
@@ -205,8 +202,6 @@
 		</div>
 	</div>
 
-	<div>条件を指定：<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()">ボタン予定</a></div>
-	
 <script type="text/javascript">
 	$(function() {
 		// 前へがクリックされた時の処理
@@ -301,9 +296,6 @@
     	retStr += '</div>';
     	return retStr;
 	}
-	
-	
-
 </script>
 
 }
