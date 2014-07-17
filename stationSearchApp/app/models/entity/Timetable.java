@@ -3,6 +3,7 @@ package models.entity;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
 
@@ -47,6 +48,7 @@ public class Timetable extends Model {
     @CreatedTimestamp
     public Date createDate;
  
+    @Version
     @UpdatedTimestamp
     public Date updateDate;
     

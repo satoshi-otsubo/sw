@@ -1,6 +1,7 @@
 package models.dao;
 
 import models.entity.Timenotice;
+import models.entity.Timetable;
 import play.db.ebean.Model;
 import play.libs.F.Option;
 import utils.ModelUtil;
@@ -56,7 +57,26 @@ public class TimenoticeDao implements ModelDao<Timenotice> {
     	Model.Finder<Long, Timenotice> find = ModelUtil.getFinder(Timenotice.class);
     	return OptionUtil.apply(find.all());
     }
-    		
+    
+    /**
+     * 駅IDで取得
+     * @param stationId
+     * @return　Option<List<Timenotice>>
+     */
+    public Option<List<Timenotice>> findByStationId(Long stationId){
+    	Model.Finder<Long, Timenotice> find = ModelUtil.getFinder(Timenotice.class);
+    	return OptionUtil.apply(find.where().eq("station_id", stationId).findList());
+    }
+    
+    /**
+     * 削除
+     * @param Timenotice
+     * @return　なし
+     */
+    public void delete(Timenotice timenotice){
+    	timenotice.delete();
+    }
+  
     /**
      * 保存
      * @param entry

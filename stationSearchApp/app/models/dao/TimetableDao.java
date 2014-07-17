@@ -63,6 +63,25 @@ public class TimetableDao implements ModelDao<Timetable> {
         }
         return new None<Timetable>();
     }
+    
+    /**
+     * 駅IDで取得
+     * @param stationId
+     * @return　Option<List<Timetable>>
+     */
+    public Option<List<Timetable>> findByStationId(Long stationId){
+    	Model.Finder<Long, Timetable> find = ModelUtil.getFinder(Timetable.class);
+    	return OptionUtil.apply(find.where().eq("station_id", stationId).findList());
+    }
+    
+    /**
+     * 削除
+     * @param Timetable
+     * @return　なし
+     */
+    public void delete(Timetable timeTable){
+    	timeTable.delete();
+    }
 
     // 駅idから路線と方面を取得する。複数存在する情報は一つにまとめる
 	public Option<List<Timetable>> findStationLineDirections2(List<Long> stationIds) {

@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
 
@@ -35,7 +36,8 @@ public class Timenotice extends Model {
 	public String contents;
     @CreatedTimestamp
     public Date createDate;
- 
+    
+    @Version
     @UpdatedTimestamp
     public Date updateDate;
     

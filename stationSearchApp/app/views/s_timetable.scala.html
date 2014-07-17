@@ -23,7 +23,7 @@
 					<div class="headderStationName">@respose.station_name&nbsp;駅&nbsp;&nbsp;時刻表</div>
 				</div>
 				<div class="col-xs-4 text-right">
-					<div class="headderStationNameLink">他の路線に変更</div>
+					@*<div class="headderStationNameLink">他の路線に変更</div>*@
 				</div>
 			</div>					
 		</div>
@@ -196,7 +196,7 @@
 		<div class="col-xs-12 col-sm-10 col-md-10">
 			<div class="noticeContent"><div class="row">
 				@for(noticeMark <- respose.noticeMarks) {
-					<div class="col-xs-12 col-sm-3 col-md-3">@noticeMark.abbreviation : @noticeMark.detail</div>
+					<div class="col-xs-12 col-sm-6 col-md-4">@noticeMark.abbreviation : @noticeMark.detail</div>
 				}
 			</div></div>
 		</div>
