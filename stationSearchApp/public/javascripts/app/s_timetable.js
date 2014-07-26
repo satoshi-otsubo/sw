@@ -155,6 +155,8 @@
 		$("#selectCount").val(selectCount);
 		
 		$("#dispTime").html(retNextTime);
+		// 表示のみの為の次発時刻をセット
+		setNextDispTime(retNextTime);
 		
 		$("#dispSta").html($("#sta" + selectCount).val());
 		$("#dispTrn").html($("#trn" + selectCount).val());
@@ -218,6 +220,8 @@
 
 		
 		$("#dispTime").html($("#time" + select).val());
+		// 表示のみの為の次発時刻をセット
+		setNextDispTime($("#time" + select).val());
 		
 		$("#dispSta").html($("#sta" + select).val());
 		$("#dispTrn").html($("#trn" + select).val());
@@ -477,8 +481,29 @@
 					$("#minute" + j).popover("hide");
 				}
 			});
-			
 		}
-	}	
+	}
+	
+	// 次の出発時刻の表示をセットする
+	function setNextDispTime(nextTime){
+		var nextDispTime = "";
+		var nextArrayStr = nextTime.split(":");
+		// 時間の設定
+		if(parseInt(nextArrayStr[0]) < 10){
+			nextDispTime += "0" + nextArrayStr[0];
+		}else{
+			nextDispTime += nextArrayStr[0];
+		}
+		nextDispTime += ":";
+		// 分の設定
+		if(parseInt(nextArrayStr[1]) < 10){
+			nextDispTime += "0" + nextArrayStr[1];
+		}else{
+			nextDispTime += nextArrayStr[1];
+		}
+		//alert(nextTime + nextDispTime);
+		$("#nextDispTime").html(nextDispTime);
+	}
+	
 	
 	

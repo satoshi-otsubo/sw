@@ -13,6 +13,7 @@ import models.response.TimeTableResponse;
 import models.service.TimeTableService;
 public class TimeTableController extends BaseController {
 
+/*
     public static Result start() {
 	
     	TimeTableService service = new TimeTableService();
@@ -22,7 +23,8 @@ public class TimeTableController extends BaseController {
     	return ok(index.render("index."));
     	
     }
-    
+*/
+	
     // 時刻表情報取得
     public static Result stationTimeTable(){
     	final Integer RESULT_VIEW_COUNT = 0;

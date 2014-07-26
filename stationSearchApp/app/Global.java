@@ -1,5 +1,7 @@
 import org.apache.commons.lang3.ArrayUtils;
 
+import controllers.S_SearchController;
+import controllers.task.TimeTableTaskActorBase;
 import play.Application;
 import play.Configuration;
 import play.GlobalSettings;
@@ -13,6 +15,7 @@ import play.filters.csrf.CSRFFilter;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -26,6 +29,8 @@ public class Global extends GlobalSettings {
 
     @Override
     public void onStart(Application application) {
+    	//System.out.println("アプリケーションスタート");
+        TimeTableTaskActorBase.getInstance().start();
         super.onStart(application);
     }
 
@@ -36,11 +41,13 @@ public class Global extends GlobalSettings {
 
     @Override
     public void onStop(Application application) {
+        TimeTableTaskActorBase.getInstance().shutdown();
         super.onStop(application);
     }
 
     @Override
     public F.Promise<SimpleResult> onError(Http.RequestHeader requestHeader, Throwable throwable) {
+    	//System.out.println("一番上でエラーが発生しました");
         return super.onError(requestHeader, throwable);
     }
 
@@ -53,22 +60,26 @@ public class Global extends GlobalSettings {
     @SuppressWarnings("rawtypes")
 	@Override
     public Action onRequest(Http.Request request, Method method) {
+    	//System.out.println("onRequest");
         Logger.info(Json.toJson(request.headers()).toString());
         return super.onRequest(request, method);
     }
 
     @Override
     public Handler onRouteRequest(Http.RequestHeader requestHeader) {
+    	//System.out.println("onRouteRequest");
         return super.onRouteRequest(requestHeader);
     }
 
     @Override
     public F.Promise<SimpleResult> onBadRequest(Http.RequestHeader requestHeader, String s) {
+    	//System.out.println("onBadRequest");
         return super.onBadRequest(requestHeader, s);
     }
 
     @Override
     public Configuration onLoadConfig(Configuration configuration, File file, ClassLoader classLoader) {
+    	//System.out.println("onLoadConfig");
         return super.onLoadConfig(configuration, file, classLoader);
     }
 
@@ -81,6 +92,7 @@ public class Global extends GlobalSettings {
      */
     @Override
     public F.Promise<SimpleResult> onHandlerNotFound(Http.RequestHeader requestHeader) {
+    	//System.out.println("onHandlerNotFound:" + requestHeader.path());
         if (hasTrailingSlash(requestHeader.path())) {
             final String path = requestHeader.path();
             return F.Promise.promise(
@@ -90,8 +102,17 @@ public class Global extends GlobalSettings {
                         }
                     }
             );
+        }else{
+        	//System.out.println("onHandlerNotFound action定義なしのため、トップに遷移させます");
+            return F.Promise.promise(
+                    new F.Function0<SimpleResult>() {
+                        public SimpleResult apply() {
+                            return Action.redirect("/");
+                        }
+                    }
+            );
         }
-        return super.onHandlerNotFound(requestHeader);
+        //return super.onHandlerNotFound(requestHeader);
     }
 
     private static String removeLastChar(String value) {

@@ -12,7 +12,7 @@ GET     /s_search_stations_geocode           controllers.S_SearchController.sear
 GET     /s_search_stations_line              controllers.S_SearchController.searchStationsByLine()
 GET     /s_search_stations_name              controllers.S_SearchController.searchStationsByName()
 
-GET    /initTimeTable                        controllers.TimeTableController.start()
+#GET    /initTimeTable                        controllers.TimeTableController.start()
 GET    /station_timetable                    controllers.TimeTableController.stationTimeTable()
 
 # API URL
