@@ -1,0 +1,18 @@
+@()
+
+<nav class="navbar navbar-default">
+    <div class="navbar-header">
+    	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-toggle-taget">
+        	<span class="icon-bar"></span>
+        	<span class="icon-bar"></span>
+        	<span class="icon-bar"></span>
+    	</button>
+    	<a class="navbar-brand" href="@routes.S_SearchController.index()">駅マップ</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbar-toggle-taget">
+	    <ul class="nav navbar-nav">
+	        <li><a href="@routes.S_SearchController.index()">トップページ</a></li>
+	        <li><a href="@routes.S_SearchController.search()">検索画面へ</a></li>
+	    </ul>
+    </div>
+</nav>

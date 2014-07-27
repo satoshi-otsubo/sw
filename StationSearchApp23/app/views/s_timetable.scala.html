@@ -1,0 +1,301 @@
+@(message: String, respose: models.response.TimeTableResponse)
+
+@import layout._
+@import helper._
+
+@main("駅マップ(時刻表)") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/ajax.js")"></script>
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/app/s_timetable.js")"></script>
+	<input type="hidden" id="fTrnKbn" value="0">
+	<input type="hidden" id="timeSize" value="@respose.totalTimes">
+	<input type="hidden" id="selectCount" value="">
+	
+	<div class="row">
+		<div class="col-xs-12 headderStationNameBack">
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="headderStationNameKind"><span id="deyKind" class="label label-default">@respose.kind</span></div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-8">
+					<div class="headderStationName">@respose.station_name&nbsp;駅&nbsp;&nbsp;時刻表</div>
+				</div>
+				<div class="col-xs-4 text-right">
+					@*<div class="headderStationNameLink">他の路線に変更</div>*@
+				</div>
+			</div>					
+		</div>
+
+		<div class="col-xs-12 headderLineNameBack">
+			<div class="row">
+				<div class="col-xs-10">
+					<div class="headderLineName">@respose.line_name</div>
+				</div>
+				<div class="col-xs-2">
+					<div id="lineStationLinkAria" class="headderLineNameLink">
+						<p id="linesDropdown" data-toggle="dropdown" class="text-right">路線の駅</p>
+						<ul id="linesDropdownMenu" class="dropdown-menu pull-right" role="menu" aria-labelledby="linesDropdown">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+			
+		<div class="col-xs-12">
+			<div class="headderDirection">
+			@for(direction <- respose.directionList) {
+				@if(respose.direction == direction){
+					<button type="button" class="btn btn-primary btn-sm disabled">@respose.direction</button>
+				}else{
+					<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@direction" role="button" class="btn btn-default btn-sm">@direction</a>
+				}
+			}
+			</div>
+		</div>
+			
+
+			
+		<div class="col-xs-12">
+  			<p class="text-center dispTimeCounterAnimate">
+  				<input type="hidden" id="dispTime">
+  				<span class="label label-primary" id="dispSELabel"></span><span class="font-disp-time" id="nextDispTime"></span>発
+  			</p>
+  		</div>
+	  		
+  		<div class="col-xs-12">
+  			<p class="text-center dispTimeCounterAnimate">
+  			<span id="dispTrn" class="label label-primary"></span>
+  			<span id="dispMark"></span>
+  			<span class="font-disp-time" id="dispSta"></span>行き
+  			</p>
+  		</div>
+	  		
+  		<div class="col-xs-2 text-center" id="previousTime">
+  			<button type="button" class="btn btn-default btn-sm">
+  				<span class="glyphicon glyphicon-chevron-left"></span>
+  			</button>
+  		</div>
+	  		
+  		<div class="col-xs-8">
+  			<p class="font-disp-time-count text-center dispTimeCounterAnimate" id="countTime">
+  			</p>
+  		</div>
+	  		
+  		<div class="col-xs-2 text-center" id="nextTime">
+  			
+  			<button type="button" class="btn btn-default btn-sm">
+  				<span class="glyphicon glyphicon-chevron-right"></span>
+  			</button>
+  		</div>
+	</div>
+ 	
+	<div id="dispTimeTable">
+		<table class="table table-bordered table-striped">
+			<tr>
+			    <th class="table-column-first">時</th>
+			    <th class="table-column-second">
+			    <div class="row">
+			    	<div class="col-xs-12 text-right">
+			    	@if(respose.kind == "1"){
+			    		<button type="button" class="btn btn-primary btn-sm active disabled">平日</button>
+			    	}else{
+			    		<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@respose.direction&kind=1&result_view=1" role="button" class="btn btn-default btn-sm">平日</a>
+			    	}
+			    	@if(respose.kind == "2"){
+			    		<button type="button" class="btn btn-primary btn-sm active disabled">土曜</button>
+			    	}else{
+			    		<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@respose.direction&kind=2&result_view=1" role="button" class="btn btn-default btn-sm">土曜</a>
+			    	}
+			    	@if(respose.kind == "4"){
+			    		<button type="button" class="btn btn-primary btn-sm active disabled">日曜・祝日</button>
+			    	}else{
+			    		<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@respose.direction&kind=4&result_view=1" role="button" class="btn btn-default btn-sm">日曜・祝日</a>
+			    	}
+			    	</div>	
+			    </div>	
+			    </th>
+			</tr>
+			
+	 		@for((entry,index) <- respose.timeTables.zipWithIndex) {
+	            <tr>
+	                <td><br>@entry.hour</td>
+	                <td>
+	                <div class="row">
+	            	@for((detailentry,index2) <- entry.detailTimeTables.zipWithIndex) {
+		            	<div class="col-xs-3 col-sm-2 col-md-1">
+		            	
+			            	<div class="disp-table-minute">
+			            		<span class="disp-notice">
+			            		@if(detailentry.trn != null){
+									@detailentry.trn
+			                	} 
+			            		@if(detailentry.sta != null){
+									@detailentry.sta
+			                	}
+			                	&nbsp;</span><br>
+			                	<span id="minute@detailentry.timeIndex" 
+			                	data-toggle="popover" 
+			                	title="" 
+			                	data-trigger="click" 
+			                	data-placement="bottom"  
+			                	data-container="body" 
+			                	data-html="true" 
+			                	data-content="">
+			                		@detailentry.minute
+			                	</span>
+			                	@if(detailentry.mark != null){
+			                		@detailentry.mark
+			                	}
+			                	<input type="hidden" id="time@detailentry.timeIndex" value="@detailentry.hour:@detailentry.minute">
+			                	<input type="hidden" id="mark@detailentry.timeIndex" value="@detailentry.dispMark">
+			                	<input type="hidden" id="trn@detailentry.timeIndex" value="@detailentry.dispTrainKind">
+			                	<input type="hidden" id="sta@detailentry.timeIndex" value="@detailentry.dispDestination">
+			                </div>	
+		                	
+		            	</div>
+	            	}
+	            	</div>
+	            	</td>
+	            </tr>
+			}
+		</table>
+	</div>	
+	
+	<div class="row">
+		<div class="col-xs-12 col-sm-2 col-md-2">
+			<div class="headderNotice">列車種別</div>
+		</div>
+		<div class="col-xs-12 col-sm-10 col-md-10">
+			<div class="noticeContent"><div class="row">
+				@for(noticeTrainKind <- respose.noticeTrainKinds) {
+					<div class="col-xs-12 col-sm-3 col-md-3">@noticeTrainKind.abbreviation : @noticeTrainKind.detail</div>
+				}
+			</div></div>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-xs-12 col-sm-2 col-md-2">
+			<div class="headderNotice">行き先</div>
+		</div>
+		<div class="col-xs-12 col-sm-10 col-md-10">
+			<div class="noticeContent"><div class="row">
+				@for(noticeDestination <- respose.noticeDestinations) {
+					<div class="col-xs-12 col-sm-3 col-md-3">@noticeDestination.abbreviation : @noticeDestination.detail</div>
+				}
+			</div></div>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-xs-12 col-sm-2 col-md-2">
+			<div class="headderNotice">注意</div>
+		</div>
+		<div class="col-xs-12 col-sm-10 col-md-10">
+			<div class="noticeContent"><div class="row">
+				@for(noticeMark <- respose.noticeMarks) {
+					<div class="col-xs-12 col-sm-6 col-md-4">@noticeMark.abbreviation : @noticeMark.detail</div>
+				}
+			</div></div>
+		</div>
+	</div>
+
+<script type="text/javascript">
+	$(function() {
+		// 前へがクリックされた時の処理
+		$("#previousTime").click(function(){
+			var select = parseInt($("#selectCount").val()) - 1;
+			setDispTime(select, 0);
+		} );
+		// 次へがクリックされた時の処理
+		$("#nextTime").click(function(){
+			var select = parseInt($("#selectCount").val()) + 1;
+			setDispTime(select, 1);
+		} );
+		
+		// 時刻詳細ポップアップの設定
+		setMinutePopover();
+		
+		// 終電対応
+		setTimeTableOfDay();
+		// 次の出発時刻をセットする
+		setNextTime(getNowTimeNum());
+		//曜日でラベルの色を変更する 
+		convDayKind();
+		//電車種別でラベルの色を変更する
+		convTrnKind();
+		//次の時間までのカウント開始
+		dispCountTime();
+		// 路線検索リンクを作成する
+		setLinesMenu(getLinesData());
+	});
+	
+	// 乗り入れがる路線の場合、複数の路線を表示するため
+	function getLinesData(){
+		var url = "@controllers.api.routes.ApiTimeTableController.linesByLineName().absoluteURL()";
+		var vals = {};
+		vals['line_name'] = "@respose.line_name";
+		var retData = exeAjax(url, vals, "GET");
+		return retData;
+	}
+	
+	// 
+	function setLinesMenu(linesData){
+		var lines = "";
+
+		if(linesData.lineInfos.length == 1){
+			$("#lineStationLinkAria").empty();
+			lines += '<p class="text-right">';
+			lines += '<a href="@routes.S_SearchController.searchStationsByLine().absoluteURL()?line_id=' + linesData.lineInfos[0].line_id + '&page=1">路線の駅</a>';
+			lines += '</p>';
+			$("#lineStationLinkAria").html(lines);
+		}else{
+			for(var i = 0; i < linesData.lineInfos.length; i++){
+				lines += '<li role="presentation"><a role="menuitem" tabindex="-1" href="@routes.S_SearchController.searchStationsByLine().absoluteURL()?line_id=' + linesData.lineInfos[i].line_id + '&page=1">' + linesData.lineInfos[i].line_name + '</a></li>';
+			}
+			$("#linesDropdownMenu").html(lines);
+		}
+			//alert(lines);
+	}
+	
+	// 現在日の前日の時刻表を取得する
+	function getPreviousDayTimetable(){
+		var url = "@controllers.api.routes.ApiTimeTableController.stationTimeTable().absoluteURL()";
+		var vals = {};
+		vals['station_id'] = "@respose.station_id";
+		vals['line_name'] = "@respose.line_name";
+		vals['direction'] = "@respose.direction";
+		vals['s_day'] = "-1";
+		var retData = exeAjax(url, vals, "GET");
+		return retData;
+	}
+	
+	// 曜日別の時刻表リンクを生成
+	function getLinkDayTimetable(kind){
+	    var retStr = "";
+	    retStr += '<div class="row">';
+	    retStr += '<div class="col-xs-12 text-right">';
+    	if(kind == "1"){
+    		retStr += '<button type="button" class="btn btn-primary btn-sm active disabled">平日</button>';
+    	}else{
+    		retStr += '<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@respose.direction&kind=1&result_view=1" role="button" class="btn btn-default btn-sm">平日</a>';
+    	}
+    	if(kind == "2"){
+    		retStr += '<button type="button" class="btn btn-primary btn-sm active disabled">土曜</button>';
+    	}else{
+    		retStr += '<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@respose.direction&kind=2&result_view=1" role="button" class="btn btn-default btn-sm">土曜</a>';
+    	}
+    	if(kind == "4"){
+    		retStr += '<button type="button" class="btn btn-primary btn-sm active disabled">日曜・祝日</button>';
+    	}else{
+    		retStr += '<a href="@routes.TimeTableController.stationTimeTable().absoluteURL()?station_id=@respose.station_id&line_name=@respose.line_name&direction=@respose.direction&kind=4&result_view=1" role="button" class="btn btn-default btn-sm">日曜・祝日</a>';
+    	}
+    	retStr += '</div>';
+    	retStr += '</div>';
+    	return retStr;
+	}
+</script>
+
+}

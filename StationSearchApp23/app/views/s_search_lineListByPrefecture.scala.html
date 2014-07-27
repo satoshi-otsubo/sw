@@ -1,0 +1,43 @@
+@(message: String, respose: models.response.S_SearchConditionsResponse)
+
+@import layout._
+@import helper._
+
+@main("駅マップ(路線選択)") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+
+    @for(prefecture <- respose.prefectures) {
+	    <div class="row">
+		    <div class="col-xs-12 headderLineNameBack">
+		    	<div class="headderLineName">路線一覧-@prefecture.pref_name</div>
+		    </div>
+		</div>
+		@for(company <- prefecture.companyList) {
+		<div class="row searchListBorder">
+			<div class="col-xs-12 searchListHeadderBack">
+				<div class="searchListHeadderContent">@company.company_name</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="searchListContent">
+					<div class="row">
+						@for(lines <- company.lines) {
+							<div class="col-xs-12 col-sm-4 col-md-3">
+								<a href="@routes.S_SearchController.searchStationsByLine().absoluteURL()?line_id=@lines.line_id&page=1">
+									@lines.line_name
+								</a>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+		}
+	}	
+	
+	
+	
+	
+	<script type="text/javascript">
+
+	</script>
+}

@@ -1,0 +1,192 @@
+@(message: String, respose: models.response.S_SearchResponse)
+
+@import layout._
+@import helper._
+
+@* 駅リストを作成 *@
+@stationList = @{
+	val dispHtml = new StringBuilder
+	var stationCount = 0
+	if(respose != null){
+		for(station <- respose.stations){
+			var lineName = ""
+			dispHtml.append("<div class='stationPanel'>")
+			dispHtml.append("<div id='" + (stationCount + 1) + "' class='stationPanel-heading'><div class='row'>")
+			dispHtml.append("<div class='col-xs-10'>" + station.station_name + "</div>")
+			dispHtml.append("<div class='col-xs-2 text-right'><img border='0' width='18px' height='25px' src='http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" +  (stationCount + 1) + "|3366FF|ffffff'></div>")
+			dispHtml.append("</div></div>")
+			if(station.lineDirections != null){
+				var lineDirectionsCount = 1
+				dispHtml.append("<div class='row'>")
+				for(lineDirection <- station.lineDirections){
+					if(lineName != lineDirection.line_name){
+						lineName = lineDirection.line_name
+						
+						if(lineDirectionsCount > 1){
+							dispHtml.append("</div>")
+						}
+						
+						dispHtml.append("<div class='col-xs-12 col-sm-4'>")
+						dispHtml.append("<div class='stationPanel-line'>")
+						dispHtml.append("<p>" + lineDirection.line_name + "</p>")
+						dispHtml.append("</div>")
+						dispHtml.append("</div>")
+						
+						dispHtml.append("<div class='col-xs-12 col-sm-8'>")
+					}
+					dispHtml.append("<a href=" + routes.TimeTableController.stationTimeTable().absoluteURL() + "?station_id=" + lineDirection.station_id + "&line_name=" + lineDirection.line_name + "&direction=" + lineDirection.direction_name + ">")
+					dispHtml.append("<div class='stationPanel-line-Direction'>" + lineDirection.direction_name + "<span class='glyphicon glyphicon-chevron-right right-icon'></span></div>")
+					dispHtml.append("</a>")
+					if(lineDirectionsCount == station.lineDirections.size){
+						dispHtml.append("</div>")
+					}
+					lineDirectionsCount = lineDirectionsCount + 1
+				}	
+				dispHtml.append("</div>")
+			}
+			dispHtml.append("</div>")
+			
+			dispHtml.append("<input type='hidden' id='lat" + stationCount + "' value=" + station.lat + ">")
+			dispHtml.append("<input type='hidden' id='lon" + stationCount + "' value=" + station.lon + ">")
+			
+			dispHtml.append("<br>")
+			stationCount = stationCount + 1
+		}
+	}
+	Html(dispHtml.toString)
+
+}
+
+@main("駅マップ(検索結果)") {
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/constants.js")"></script>
+	<script type='text/javascript' src="@routes.Assets.at("javascripts/ws-geomap.js")"></script>
+	<script src="https://maps-api-ssl.google.com/maps/api/js?v=3&sensor=true" type="text/javascript"></script>
+	
+	<div class="text-right">
+		@if(respose != null) { 
+			@if(respose.action == 2){
+				半径：
+				@if(respose.area == "1000"){
+					<span class="label label-primary">1Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=1000&page=1">1Km</a>
+				}
+				@if(respose.area == "3000"){
+					<span class="label label-primary">3Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=3000&page=1">3Km</a>
+				}
+				@if(respose.area == "5000"){
+					<span class="label label-primary">5Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=5000&page=1">5Km</a>
+				}
+				@if(respose.area == "10000"){
+					<span class="label label-primary">10Km</span>
+				}else{
+					<a href="@routes.S_SearchController.searchStationsByGeoCode()?lat=@respose.lat&lon=@respose.lon&area=10000&page=1">10Km</a>
+				}
+			}
+		} 
+		<button id="mapDispButton" type="button" class="btn btn-default btn-sm"><span id="mapDispText"></span></button>
+	</div>
+	<!-- マップ表示領域 -->
+	<div class="pagination-centered" id="mapCanvas">
+	</div>
+
+	@if(respose != null) { 
+		@* マップ用カウント *@
+		<input type="hidden" id="results_count" value="@respose.stations.size">
+	    @* 駅リスト *@
+		<div id="station-list">@stationList</div>
+    }
+
+	@if(respose.page != null) { 
+		<div>@helper.pagenate(respose)</div>
+	}	   
+
+	<script type="text/javascript">
+		$(function() {
+			
+			// ブラウザの高さを取得
+			wH = $(window).height() * 0.6;
+			// マップ上に駅のピンを立てて表示する
+			setMap();
+			
+			mapDispButtonAction(wH, 0);
+			
+			$("#mapDispButton").click(function () {
+				mapDispButtonAction(wH, 1);
+			});
+
+		});
+		
+		function mapDispButtonAction(mapHeight, sb){
+			if(sb == 0){
+				$("#map").css('height',mapHeight+'px');
+				$("#mapDispText").html("マップを隠す");
+			}else{
+				if($('#mapCanvas').is(':visible')){
+					$("#mapCanvas").slideUp(
+							500, 
+							function(){
+								$("#mapDispText").html("マップを表示");
+							}
+						);
+						
+				}else{
+					$("#mapCanvas").slideDown(
+							500,
+							function(){
+								$("#mapDispText").html("マップを隠す");
+								// マップの位置に移動する
+								var off = $('#mapCanvas').offset();
+								$('html,body').animate({scrollTop: off.top}, 100);
+							}
+						);
+				}
+				
+			}
+		}
+		
+		function setMap(){
+			$("#map").remove();
+			$("#mapCanvas").empty();
+			//id=mapを作成
+			$("#mapCanvas").append("<div id='map' class='plusMap'></div>");
+			var map = new google.maps.Map(document.getElementById("map"));
+			var results_count = $("#results_count").val();
+			for(i = 0; i < results_count ; i++){
+				var r_lat = $("#lat" + i).val();
+				var r_lon = $("#lon" + i).val();
+				//alert("latitude" + r_lat + "" + "longitude" + r_lon);
+				addMarkerGeocodeSearch(
+						map,
+						r_lat,
+						r_lon,
+						results_count,
+						i+1);
+			}
+			
+		}
+
+		//位置情報取得拒否の場合の処理
+		function getPositionErrorCallback(error){
+			var err_msg = "位置情報取得エラー";
+			switch(error.code){
+				case ERRORS_GET_POSITION_REFUSAL:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+			    case ERRORS_GET_POSITION_DEVICE:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+				case ERRORS_GET_POSITION_TIMEOUT:
+					alert(err_msg);
+					window.location = "/s_search";
+					break;
+			}
+		}
+	</script>
+}

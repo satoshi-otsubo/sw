@@ -1,0 +1,221 @@
+@padding-zero: 0 0 0 0;
+@margin-zero: 0 0 0 0;
+
+#mapCanvas .plusMap {
+  width: 100%;
+  height: 100px;
+  margin: @margin-zero;
+}
+
+/* 駅検索結果画面 */
+.stationPanel {
+	padding: @padding-zero;
+	border: 1px solid #DCDCDC;
+	
+	.stationPanel-heading{
+		font-size:18px;
+		font-weight: bold;
+		background-color: #F5F5F5;
+		padding: 5px 10px 5px 10px;
+	}
+	
+	.stationPanel-heading-active{
+		font-size:18px;
+		font-weight: bold;
+		color: #ffffff;
+		background-color: #6495ED;
+		padding: 5px 10px 5px 10px;
+	}
+	
+	.stationPanel-line{
+		font-size:16px;
+		padding: 5px 0px 0px 10px;
+		margin: @margin-zero;
+		border-top: 1px solid #DCDCDC;
+	}
+	
+	.stationPanel-line-Direction{
+		font-size:16px;
+		padding: 5px 10px 10px 10px;
+		margin: @margin-zero;
+		border-top: 1px solid #DCDCDC;
+		border-left: 1px solid #DCDCDC;
+		.right-icon{
+			float: right;
+		}
+		&:hover {
+			cursor: pointer;
+			background-color: #F5F5F5;
+		}
+		
+	}
+}
+/* 駅検索結果画面 ここまで*/
+
+.logo, .footer-content, .description, .copy-align {
+    text-align: center;
+    vertical-align: top;
+    
+}
+
+.disp-notice {
+	font-size:10px;
+}
+
+/* 時刻表ページ関連 */
+.headderStationNameBack{
+	background-color: #F5F5F5;
+}
+.headderStationNameKind{
+	font-size:18px;
+	padding: 5px 0 0px 10px;
+}
+.headderStationNameLink{
+	font-size:11px;
+	padding: 10px 5px 0 0;
+}
+
+/* 駅名表示見出し */
+.headderStationName {
+	font-size:18px;
+	font-weight: bold;
+	/*border: 1px solid #DCDCDC;*/
+	background-color: #F5F5F5;
+	padding: 5px 0 5px 10px;
+}
+
+/* 路線名表示見出し */
+.headderLineNameBack{
+	background-color: #6495ED;
+}
+.headderLineName {
+	font-size:15px;
+	color: #ffffff;
+	font-weight: bold;
+	/*border: 1px solid #DCDCDC;*/
+	background-color: #6495ED;
+	padding: 3px 0 3px 10px;
+}
+.headderLineNameLink{
+	font-size:11px;
+	color: #ffffff;
+	padding: 5px 5px 0 0;
+}
+.headderLineNameLink a{
+	color: #ffffff;
+}
+.headderLineNameLink p{
+	cursor: pointer;
+}
+
+
+
+/* 方面表示背景 */
+.headderDirection {
+	padding: 5px 5px 5px 5px;
+	background-color: #FDFDFD;
+}
+/* 時刻などの表示文字 */
+.font-disp-time {
+	font-size:18px;
+	font-weight: bold;
+}
+.font-disp-time-count{
+	font-size:24px;
+	font-weight: bold;
+}
+.font-disp-time-count-2{
+	font-size:14px;
+}
+
+.disp-table-minute{
+	border-bottom: 1px dotted #DCDCDC;
+}
+
+/* 注意書き */
+.headderNotice {
+	font-size:14px;
+	color: #ffffff;
+	font-weight: bold;
+	background-color: #6495ED;
+	padding: 1px 0 1px 10px;
+	margin-bottom: 1px;
+}
+
+.noticeContent {
+	font-size:14px;
+	padding: 5px 5px 5px 5px;
+	background-color: #FDFDFD;
+	padding: 1px 0 1px 10px;
+}
+
+.searchListBorder {
+		border-bottom: 1px solid #DCDCDC;
+		border-left: 1px solid #DCDCDC;
+		border-right: 1px solid #DCDCDC;
+}
+
+.searchListHeadderBack {
+	background-color: #FDFDFD;
+}
+
+.searchListHeadderContent {
+	font-size:14px;
+	padding: 1px 0 1px 10px;
+}
+.searchListContent {
+	font-size:14px;
+	border-top: 1px solid #DCDCDC;
+	padding: 1px 0 1px 10px;
+}
+
+
+
+/* extend twitter bootstrap */
+
+.navbar {
+    border-radius: 0;
+    border: none;
+    margin-bottom: 5px;
+}
+
+.container{
+	padding: 0 0 0 0;
+}
+
+.row{
+	padding: 0 0 0 0;
+	margin: 0 0 0 0;
+}
+
+.col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12 {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	
+}
+
+form.helper_form dl{
+	margin: 10px 0 10px 0;
+	padding: 0 0 0 0;
+}
+
+form.helper_form dt{
+	float:left;
+	clear: left;
+	margin: 10px 0 10px 0;
+	padding: 0 0 0 0;
+}
+
+form.helper_form dd{
+	float:left;
+	margin: 10px 0 10px 0;
+	padding: 0 0 0 0;
+}
+
+form.helper_form input{
+	margin: 0 0 0 10px;
+}
+
+form.helper_form button{
+	margin: 5px 0px 0px 10px;
+}
